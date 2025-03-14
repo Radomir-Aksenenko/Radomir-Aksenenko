@@ -1,5 +1,6 @@
 # 💫 About Me:
-😎I'm studying now<br>😀I'm working on a big project.
+
+I am a designer and also a beginner front-end developer.<br>😎I'm studying now<br>😀I'm working on a big project.
 
 
 ## 🌐 Socials:
