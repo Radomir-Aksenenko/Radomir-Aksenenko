@@ -2,7 +2,7 @@ name: Refresh profile graphics
 
 on:
   schedule:
-    - cron: "17 3 * * 1" # weekly: every run commits a new photograph, about 1.4 MB
+    - cron: "17 3 * * 1" # weekly: every run commits a new photograph, about 1.2 MB
   workflow_dispatch:
 
 permissions:
@@ -11,6 +11,7 @@ permissions:
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -18,8 +19,12 @@ jobs:
           node-version: 22
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
-      - name: Print and photograph the page
+          python-version: "3.13" # bpy 5.2 ships for this version only
+          cache: pip
+          cache-dependency-path: tools/requirements.txt
+      - name: Install what Blender links against
+        run: sudo apt-get update && sudo apt-get install -y libsm6 libice6
+      - name: Write the edition, render the town, photograph the page
         working-directory: tools
         env:
           GH_TOKEN: ${{ secrets.PROFILE_TOKEN }}
@@ -33,5 +38,5 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets
+          git add assets README.md tools/edition.json
           git diff --cached --quiet || (git commit -m "chore(stats): refresh profile graphics" && git push)

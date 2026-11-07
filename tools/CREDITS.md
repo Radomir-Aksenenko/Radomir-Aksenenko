@@ -1,12 +1,21 @@
 # Credits
 
-The photograph on the profile page is generated. Nothing in it was shot with a camera.
+The photograph on the profile page is generated. Nothing in it was shot with a camera, and no
+model writes the stories: `generate.mjs` builds them from each project's README and public log
+by fixed rules.
 
-## Textures (CC0, [ambientCG](https://ambientcg.com))
+## The town
+
+A 3D scene built by `city.py` and rendered with Blender Cycles (`bpy`, GPL). Each of the tall
+towers stands for one week of GitHub contributions.
+
+- `textures/city/Facade*`, `Bricks075A`, `Concrete034`: CC0, [ambientCG](https://ambientcg.com), reduced to 512 px
+- `textures/city/sky.exr`: Kloofendal 48d Partly Cloudy (Pure Sky), CC0, [Poly Haven](https://polyhaven.com), recompressed
+
+## Paper (CC0, [ambientCG](https://ambientcg.com))
 
 - `textures/paper_grain.jpg`, `textures/paper_colour.jpg`: Paper001
 - `textures/paper_waves.jpg`: Paper003
-- `textures/wood.jpg`: Wood049
 
 ## Type
 

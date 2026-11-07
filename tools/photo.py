@@ -4,8 +4,12 @@ Everything is built in page space first (paper, ink, height), so ink and paper
 share one displacement field and one light. Only then does the sheet go through
 the camera. All noise is seeded: same input, same bytes.
 
-Usage: photo.py <mask.png> <out.jpg> [--layout layout.json] [--width 1800] [--quality 82]
-                [--fold 0.5] [--no-fold] [--calm 1] [--margin 0.045] [--seed 1944]
+The result is a cut-out with its shadow in the alpha channel, so it lies directly on the
+GitHub page in either theme: there is no table and no rectangle.
+
+Usage: photo.py <mask.png> <out.webp> [--layout layout.json --city <render stem>] [--width 1800]
+                [--quality 80] [--fold 0.5] [--no-fold] [--calm 1] [--margin 0.05] [--roll -.5]
+                [--seed 1944]
 """
 import argparse
 import json
@@ -19,8 +23,8 @@ TEX = HERE / 'textures'
 
 # Sampled from photographs of real 1944-63 front pages, then pulled toward the
 # paler end: gamma-encoded sRGB, 0..1.
-PAPER = np.array([0.900, 0.862, 0.752], np.float32)
-PAPER_AGED = np.array([0.790, 0.670, 0.480], np.float32)
+PAPER = np.array([0.872, 0.846, 0.772], np.float32)
+PAPER_AGED = np.array([0.770, 0.695, 0.555], np.float32)
 INK = np.array([0.105, 0.095, 0.080], np.float32)
 LIGHT = np.array([-0.46, -0.62, 0.64], np.float32)  # window, upper left
 LIGHT /= np.linalg.norm(LIGHT)
@@ -88,93 +92,6 @@ def read_mask(path):
     g = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY).astype(np.float32) / 255 if img.ndim == 3 else img.astype(np.float32) / 255
     lo, hi = np.percentile(g, .2), np.percentile(g, 99.8)
     return np.clip((hi - g) / max(hi - lo, 1e-3), 0, 1)
-
-
-def skyline(weeks, h, w, rng):
-    """A year of work as a city across a river, continuous tone, 1 = solid ink."""
-    horizon = int(h * .79)
-    yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
-    # Overcast sky: pale at the skyline, heavier and cloudier above.
-    sky = .30 - .22 * (yy / horizon)
-    cl = clouds(rng, h, w, [w * .10, w * .035, w * .012], [1, .6, .25])
-    sky = np.clip(sky + cl * .065 * (1.1 - yy / horizon), .03, .6)
-    img = sky.copy()
-    # Far, hazy district.
-    far = np.abs(clouds(rng, 1, w, [w * .05, w * .012], [1, .5])[0])
-    steps = np.repeat(far[::max(1, w // 90)], max(1, w // 90))[:w]
-    if steps.size < w:
-        steps = np.pad(steps, (0, w - steps.size), mode='edge')
-    far_top = horizon - (h * .06 + steps * h * .075)
-    img = np.where(yy >= far_top[None, :], .33, img)
-    # Nearer blocks between the towers.
-    n = len(weeks)
-    bw = w / n
-    mid = rng.random(n * 2)
-    for i, m in enumerate(mid):
-        x0, x1 = int(i * bw / 2), int((i + 1.3) * bw / 2)
-        top = int(horizon - h * (.03 + m * .09))
-        img[top:horizon, x0:x1] = .50 + m * .08
-    # One building per week. Tall ones stand behind, so the low ones overlap them.
-    peak = max(max(weeks), 1)
-    max_h = horizon * .80
-    # Solid low city, so no tower stands alone on the bank.
-    base_top = horizon - h * .055 - np.abs(clouds(rng, 1, w, [w * .02, w * .006], [1, .5])[0]) * h * .03
-    img = np.where((yy >= base_top[None, :]) & (yy < horizon), .74, img)
-    order = sorted(range(n), key=lambda i: -weeks[i])
-    for i in order:
-        v = weeks[i]
-        hgt = (h * .05 + np.sqrt(v / peak) * max_h) if v else h * .035
-        cx = (i + .5) * bw
-        tw = bw * (1.75 + rng.random() * .55)
-        if hgt > h * .42:
-            tiers = [(1.0, .46), (.72, .76), (.44, .93), (.22, 1.0)]
-        elif hgt > h * .2:
-            tiers = [(1.0, .68), (.64, 1.0)]
-        else:
-            tiers = [(1.0, 1.0)]
-        for wf, hf in tiers:
-            half = tw * wf / 2
-            x0, x1 = max(int(cx - half), 0), min(int(np.ceil(cx + half)), w)
-            y0 = int(horizon - hgt * hf)
-            if x1 <= x0 or y0 >= horizon:
-                continue
-            split = x0 + int((x1 - x0) * .55)
-            hh = horizon - y0
-            depth = np.linspace(0, 1, hh, dtype=np.float32)[:, None]
-            # Haze lifts the far top of each block; the street end goes dark.
-            lit = .34 + depth * .34
-            dark = .74 + depth * .20
-            pitch_x, pitch_y = max(4, int(bw / 2.6)), max(5, int(bw / 2.3))
-            col = np.arange(x0, x1)
-            row = np.arange(y0, horizon)
-            win = (np.mod(col, pitch_x) < pitch_x * .5)[None, :] & (np.mod(row, pitch_y) < pitch_y * .5)[:, None]
-            face = np.where(col[None, :] < split, lit, dark) * np.ones((hh, x1 - x0), np.float32)
-            noise = rng.random((hh // pitch_y + 2, (x1 - x0) // pitch_x + 2)).astype(np.float32)
-            nmap = noise[(row - y0)[:, None] // pitch_y, (col - x0)[None, :] // pitch_x]
-            win_tone = np.where(col[None, :] < split, np.where(nmap > .25, .12, -.05), np.where(nmap > .9, -.42, .03))
-            img[y0:horizon, x0:x1] = np.clip(face + win * win_tone, 0, 1)
-        # The record week carries a mast.
-        if v == peak:
-            mx = int(cx)
-            img[max(0, int(horizon - hgt * 1.10)):int(horizon - hgt), mx - 1:mx + 2] = .88
-    # River: the city's reflection, broken by ripples, with a dark far bank.
-    water_h = h - horizon
-    refl = img[horizon - water_h * 2:horizon][::-1]
-    refl = cv2.resize(blur(refl, 3), (w, water_h), interpolation=cv2.INTER_AREA)
-    ry, rx = np.mgrid[0:water_h, 0:w].astype(np.float32)
-    ripple = clouds(rng, water_h, w, [1.6, 5], [1, .8])
-    streak = cv2.resize(rng.standard_normal((water_h // 3 + 2, w // 60 + 2)).astype(np.float32), (w, water_h), interpolation=cv2.INTER_LINEAR)
-    refl = cv2.remap(refl, rx + (ripple * .35 + streak * .65) * (3 + ry * .09), ry, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
-    refl = blur(refl, 1.6)
-    fade = (ry / water_h)
-    img[horizon:] = np.clip(refl * (.72 - fade * .34) + .10 + fade * .10 + np.abs(streak) * .03, 0, 1)
-    img[horizon - 2:horizon + 2] = .90
-    # Lens softness, then the grain of the original negative.
-    img = blur(img, 1.15)
-    img = img + clouds(rng, h, w, [1.1, 2.4], [1, .7]) * .018
-    # A vignette from the wirephoto's copy stand.
-    r2 = ((xx / w - .5) / .72) ** 2 + ((yy / h - .5) / .72) ** 2
-    return np.clip(img + np.clip(r2 - .55, 0, 1) * .10, 0, 1)
 
 
 def halftone(tone, pitch, angle=45):
@@ -349,18 +266,8 @@ def sheet(mask, rng, fold_frac, show_from=None, calm=1.0):
     return img, H, alpha
 
 
-def table(rng, h, w):
-    wood = read_texture('wood.jpg', cv2.IMREAD_COLOR)[..., ::-1]
-    wood = cv2.resize(tile(wood, h, w), (w, h), interpolation=cv2.INTER_CUBIC)
-    lin = to_linear(wood)
-    g = cv2.cvtColor(wood, cv2.COLOR_RGB2GRAY)
-    gx = cv2.Sobel(g, cv2.CV_32F, 1, 0, ksize=5) / 40
-    gy = cv2.Sobel(g, cv2.CV_32F, 0, 1, ksize=5) / 40
-    relief = np.clip(1 - (gx * LIGHT[0] + gy * LIGHT[1]) * 3.0, .5, 1.5)
-    return lin * relief[..., None] * .20
-
-
-def photograph(img, H, alpha, frame_w, margin, rng, supersample=2, calm=1.0):
+def photograph(img, H, alpha, frame_w, margin, rng, supersample=2, calm=1.0, roll=-.5):
+    """Returns sRGB and alpha. Colour runs past the sheet, so filters never pull in a dark rim."""
     h, w = alpha.shape
     # Parallax from the sheet's relief, in page space.
     slow = blur(H, w * .006)
@@ -381,12 +288,13 @@ def photograph(img, H, alpha, frame_w, margin, rng, supersample=2, calm=1.0):
     ph = pw * h / w
     mx, my = F * margin, F * margin * 1.05
     FH = int(ph + 2 * my)
-    # A hand-held camera: a degree of tilt, a hair of roll.
-    tilt, roll = .010, -.0055
+    # Laid down by hand: a little out of square. Hand-held camera: a degree of tilt.
+    tilt, rad = .010, np.deg2rad(roll)
     cx, cy = F / 2, FH / 2
     corners = np.float32([[mx, my], [mx + pw, my], [mx + pw, my + ph], [mx, my + ph]])
-    corners[:, 0] += (corners[:, 1] - cy) * roll
-    corners[:, 1] -= (corners[:, 0] - cx) * roll
+    dx, dy = corners[:, 0] - cx, corners[:, 1] - cy
+    corners[:, 0] = cx + dx * np.cos(rad) - dy * np.sin(rad)
+    corners[:, 1] = cy + dx * np.sin(rad) + dy * np.cos(rad)
     corners[:, 0] = cx + (corners[:, 0] - cx) * (1 + (corners[:, 1] - cy) / FH * tilt * 2)
     src = np.float32([[0, 0], [w, 0], [w, h], [0, h]])
     M = cv2.getPerspectiveTransform(src, corners)
@@ -394,42 +302,37 @@ def photograph(img, H, alpha, frame_w, margin, rng, supersample=2, calm=1.0):
     sheet_img = cv2.warpPerspective(img, M, size, flags=cv2.INTER_AREA, borderMode=cv2.BORDER_REPLICATE)
     a = cv2.warpPerspective(alpha, M, size, flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
     lift = cv2.warpPerspective(H, M, size, flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE) / w
-
-    bg = table(rng, FH, F)
-    # One light: shadows fall away from the window, wider where the sheet stands off the table.
-    off = np.array([-LIGHT[0], -LIGHT[1]]) / LIGHT[2]
-    def cast(dist, soft, strength):
-        T = np.float32([[1, 0, off[0] * dist], [0, 1, off[1] * dist]])
-        return cv2.warpAffine(blur(a, soft), T, size, borderMode=cv2.BORDER_CONSTANT) * strength
     u = F / 2000
-    contact = cast(4 * u, 3 * u, .62)
-    near = cast(12 * u, 12 * u, .55)
-    far = cast(30 * u, 40 * u, .42)
-    # Sum of independent occluders; not a straight add, or it clips to a black outline.
-    shadow = 1 - (1 - contact) * (1 - near) * (1 - far)
-    bg = bg * (1 - shadow[..., None])
-    # The rest of the section lies under the front page, never quite square to it.
-    under = np.zeros_like(a)
-    under_col = np.zeros_like(bg)
-    for dx, dy, rot, shade_k in ((6.5, 7.0, .0013, .58), (-2.5, 5.5, -.0007, .66), (4.5, 3.5, .0009, .74)):
-        T = cv2.getRotationMatrix2D((F / 2, FH / 2), float(np.rad2deg(rot)), 1)
-        T[0, 2] += dx * u
-        T[1, 2] += dy * u
-        li = cv2.warpAffine(a, T, size, borderMode=cv2.BORDER_CONSTANT)
-        under_col = under_col * (1 - li[..., None]) + to_linear(PAPER_AGED) * shade_k * li[..., None]
-        under = np.maximum(under, li)
-    bg = bg * (1 - under[..., None]) + under_col * under[..., None]
-    # A hairline of shadow where the front page rests on them.
-    bg = bg * (1 - cast(1.6 * u, 1.4 * u, .46)[..., None] * under[..., None])
-    out = sheet_img * a[..., None] + bg * (1 - a[..., None])
 
-    # Light falls off from the window across the whole scene.
+    # The rest of the section lies under the front page, never quite square to it.
+    colour = sheet_img.copy()
+    cover = a.copy()
+    for ox, oy, rot, shade_k in ((4.5, 3.5, .0009, .86), (-2.5, 5.5, -.0007, .78), (6.5, 7.0, .0013, .70)):
+        T = cv2.getRotationMatrix2D((F / 2, FH / 2), float(np.rad2deg(rot)), 1)
+        T[0, 2] += ox * u
+        T[1, 2] += oy * u
+        li = cv2.warpAffine(a, T, size, borderMode=cv2.BORDER_CONSTANT)
+        fresh = li * (1 - cover)
+        colour = colour * (1 - fresh[..., None]) + to_linear(PAPER_AGED) * shade_k * fresh[..., None]
+        cover = np.maximum(cover, li)
+
+    # One light: the shadow grows where the sheet stands off the page, along the fold and at the corners.
+    off = np.array([-LIGHT[0], -LIGHT[1]]) / LIGHT[2]
     yy, xx = np.mgrid[0:FH, 0:F].astype(np.float32)
+    height = np.clip(blur(lift, 30 * u) * F, 0, None)
+    def cast(dist, soft, strength, raise_k):
+        d = dist * u + height * raise_k
+        return cv2.remap(blur(cover, soft * u), xx - off[0] * d, yy - off[1] * d, cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT) * strength
+    contact = cast(2.2, 2.2, .62, .18)
+    near = cast(7, 9, .44, .6)
+    far = cast(16, 30, .30, 1.1)
+    shadow = 1 - (1 - contact) * (1 - near) * (1 - far)
+
+    # Light falls off from the window across the whole sheet.
     nx, ny = xx / F, yy / FH
-    fall = 1.10 - .24 * (nx * .55 + ny * .45)
-    # Vignette of the lens, with its centre pushed toward the light.
+    fall = 1.10 - .22 * (nx * .55 + ny * .45)
     r2 = ((nx - .46) / .78) ** 2 + ((ny - .46) / .82) ** 2
-    out = out * (fall * (1 - .22 * np.clip(r2, 0, 1.6) ** 1.3))[..., None]
+    out = colour * (fall * (1 - .18 * np.clip(r2, 0, 1.6) ** 1.3))[..., None]
 
     # Depth of field: focused mid-frame, slipping at top and bottom.
     far_blur = blur(out, 1.5 * u)
@@ -444,22 +347,25 @@ def photograph(img, H, alpha, frame_w, margin, rng, supersample=2, calm=1.0):
     out[..., 2] = scale_channel(out[..., 2], .99958)
 
     # Down to delivery size; the sensor and its pipeline happen after this.
-    small = cv2.resize(out, (frame_w, int(FH / supersample)), interpolation=cv2.INTER_AREA)
-    # Warm white balance, gentle exposure.
-    small = small * np.array([1.03, 1.0, .93], np.float32) * 1.22
-    # Sensor noise lives in the linear signal, and shadows carry more of it.
+    dsize = (frame_w, int(FH / supersample))
+    small = cv2.resize(out, dsize, interpolation=cv2.INTER_AREA)
+    cover_s = cv2.resize(cover, dsize, interpolation=cv2.INTER_AREA)
+    shadow_s = cv2.resize(shadow, dsize, interpolation=cv2.INTER_AREA)
+    small = small * np.array([1.03, 1.0, .95], np.float32) * 1.2
     fh, fw = small.shape[:2]
     lum = small.mean(2, keepdims=True)
     noise = np.stack([clouds(rng, fh, fw, [.55, 1.05], [1, .55]) for _ in range(3)], 2)
     mono = clouds(rng, fh, fw, [.6, 1.2], [1, .6])[..., None]
     small = small + (noise * .35 + mono * .65) * (.0045 + .012 * np.sqrt(np.clip(lum, 0, 1)))
-    srgb = to_srgb(small)
-    # Film-like shoulder and toe.
-    srgb = np.clip(srgb, 0, 1)
+    srgb = np.clip(to_srgb(small), 0, 1)
     srgb = srgb + (.5 - np.abs(srgb - .5)) * (srgb - .5) * .26
-    # A camera's light capture sharpening.
     srgb = srgb + (srgb - blur(srgb, 1.1)) * .42
-    return np.clip(srgb, 0, 1)
+    srgb = np.clip(srgb, 0, 1)
+
+    # Paper over shadow over whatever the page is: shadow is pure black with its own alpha.
+    A = cover_s + (1 - cover_s) * shadow_s
+    rgb = srgb * (cover_s / np.maximum(A, 1e-4))[..., None]
+    return np.clip(rgb, 0, 1), np.clip(A, 0, 1)
 
 
 def main():
@@ -467,13 +373,16 @@ def main():
     p.add_argument('mask')
     p.add_argument('out')
     p.add_argument('--layout')
+    p.add_argument('--city', help='stem of the rendered city, for the picture on the page')
     p.add_argument('--width', type=int, default=1800)
-    p.add_argument('--quality', type=int, default=82)
+    p.add_argument('--quality', type=int, default=80)
     p.add_argument('--fold', type=float, default=.5)
-    p.add_argument('--margin', type=float, default=.045)
+    p.add_argument('--margin', type=float, default=.05)
     p.add_argument('--seed', type=int, default=1944)
     p.add_argument('--no-fold', action='store_true')
     p.add_argument('--calm', type=float, default=1.0)
+    p.add_argument('--roll', type=float, default=-.5)
+    p.add_argument('--pitch', type=float, default=3.0, help='halftone pitch in delivered pixels')
     a = p.parse_args()
     rng = np.random.default_rng(a.seed)
     mask = read_mask(a.mask)
@@ -484,18 +393,21 @@ def main():
         show = lay.get('bodyFrom')
         r = lay['picture']
         x, y, w, h = [int(round(r[n] * k)) for n in 'xywh']
-        tone = skyline(lay['weeks'], h, w, rng)
-        # Screen pitch set so the dots resolve in the delivered photograph.
-        pitch = mask.shape[1] / (a.width * (1 - 2 * a.margin)) * 3.7
+        from press import develop
+        tone = 1 - develop(a.city, seed=a.seed)
+        tone = cv2.resize(tone, (w, h), interpolation=cv2.INTER_AREA if tone.shape[1] > w else cv2.INTER_CUBIC)
+        # Screen pitch set so the dots just resolve in the delivered photograph.
+        pitch = mask.shape[1] / (a.width * (1 - 2 * a.margin)) * a.pitch
         mask[y:y + h, x:x + w] = np.maximum(mask[y:y + h, x:x + w], halftone(tone * .96, pitch))
     img, H, alpha = sheet(mask, rng, 0 if a.no_fold else a.fold, show, a.calm)
-    shot = photograph(img, H, alpha, a.width, a.margin, rng, calm=a.calm)
-    bgr = (shot[..., ::-1] * 255 + .5).astype(np.uint8)
-    ok, buf = cv2.imencode('.jpg', bgr, [cv2.IMWRITE_JPEG_QUALITY, a.quality, cv2.IMWRITE_JPEG_OPTIMIZE, 1, cv2.IMWRITE_JPEG_PROGRESSIVE, 1])
+    rgb, cut = photograph(img, H, alpha, a.width, a.margin, rng, calm=a.calm, roll=a.roll)
+    bgra = np.dstack([rgb[..., ::-1], cut])
+    bgra = (bgra * 255 + .5).astype(np.uint8)
+    ok, buf = cv2.imencode('.webp', bgra, [cv2.IMWRITE_WEBP_QUALITY, a.quality])
     if not ok:
         raise RuntimeError('encode failed')
     Path(a.out).write_bytes(buf.tobytes())
-    print(a.out, bgr.shape[1], 'x', bgr.shape[0], f'{len(buf) / 1e6:.2f} MB')
+    print(a.out, bgra.shape[1], 'x', bgra.shape[0], f'{len(buf) / 1e6:.2f} MB')
 
 
 if __name__ == '__main__':

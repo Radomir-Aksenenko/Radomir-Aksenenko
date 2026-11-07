@@ -3,8 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node generate.mjs && npm run photo",
-    "photo": "python photo.py .build/page.png ../assets/page.jpg --layout .build/layout.json --width 1800 && python photo.py .build/telegram.png ../assets/telegram.jpg --no-fold --calm .28 --width 1000 --margin .05 --seed 7 --quality 84 && python photo.py .build/email.png ../assets/email.jpg --no-fold --calm .28 --width 1000 --margin .05 --seed 11 --quality 84"
+    "build": "node generate.mjs && npm run city && npm run photo",
+    "city": "python city.py .build/layout.json .build/city --tex textures/city --sky textures/city/sky.exr",
+    "photo": "python photo.py .build/page.png ../assets/page.webp --layout .build/layout.json --city .build/city --width 1800 && python photo.py .build/telegram.png ../assets/telegram.webp --no-fold --calm .28 --width 1000 --seed 7 --quality 82 --roll -1.1 && python photo.py .build/email.png ../assets/email.webp --no-fold --calm .28 --width 1000 --seed 11 --quality 82 --roll .9"
   },
   "dependencies": {
     "@fontsource/league-gothic": "5.3.0",
