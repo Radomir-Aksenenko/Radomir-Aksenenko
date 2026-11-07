@@ -1,0 +1,19 @@
+{
+  "name": "profile-graphics",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node generate.mjs && npm run photo",
+    "photo": "python photo.py .build/page.png ../assets/page.jpg --layout .build/layout.json --width 1800 && python photo.py .build/telegram.png ../assets/telegram.jpg --no-fold --calm .28 --width 1000 --margin .05 --seed 7 --quality 84 && python photo.py .build/email.png ../assets/email.jpg --no-fold --calm .28 --width 1000 --margin .05 --seed 11 --quality 84"
+  },
+  "dependencies": {
+    "@fontsource/league-gothic": "5.3.0",
+    "@fontsource/pathway-gothic-one": "5.3.0",
+    "@fontsource/stint-ultra-condensed": "5.3.0",
+    "@resvg/resvg-js": "2.6.2",
+    "hyphenation.en-us": "0.2.1",
+    "hypher": "0.2.5",
+    "opentype.js": "1.3.4",
+    "simple-icons": "13.21.0"
+  }
+}
