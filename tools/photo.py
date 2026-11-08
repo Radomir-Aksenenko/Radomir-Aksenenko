@@ -108,16 +108,16 @@ def halftone(tone, pitch, angle=45):
     return smooth(tone - rank, -.07, .07)
 
 
-def print_ink(mask, tooth, rng, fold_y, folds_x):
+def print_ink(mask, tooth, rng, fold_y, folds_x, k=1.0):
     """Ink as a press leaves it: spread, rough edges, uneven density, gaps in the solids."""
     h, w = mask.shape
     # Edges follow the fibre of the sheet.
-    jx = clouds(rng, h, w, [1.1, 2.6], [1, .8]) * .34
-    jy = clouds(rng, h, w, [1.1, 2.6], [1, .8]) * .34
+    jx = clouds(rng, h, w, [1.1 * k, 2.6 * k], [1, .8]) * .34 * k
+    jy = clouds(rng, h, w, [1.1 * k, 2.6 * k], [1, .8]) * .34 * k
     yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
     rough = cv2.remap(mask, xx + jx, yy + jy, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
     # Dot gain: soften, then bias the threshold outward.
-    soft = blur(rough, .62)
+    soft = blur(rough, .62 * k)
     a = smooth(soft + tooth * .012, .16, .56)
     # Pressure varies across the forme: broad clouds and slug-height bands.
     broad = clouds(rng, h, w, [120, 420], [.6, 1])
@@ -126,11 +126,11 @@ def print_ink(mask, tooth, rng, fold_y, folds_x):
     d = .95 + broad * .03 + bands * .012
     # Solids starve: paper tooth breaks through wherever ink sits thick.
     core = blur(a, 3.5)
-    salt = smooth(tooth + clouds(rng, h, w, [1.4]) * .35, 1.25, 2.3)
+    salt = smooth(tooth + clouds(rng, h, w, [1.4 * k]) * .35, 1.25, 2.3)
     # Only real solids starve; a stem of body type is too thin to.
     d = d * (1 - smooth(core, .6, .95) * salt * .30)
     # Rim of a letterpress impression, a touch darker than its middle.
-    rim = np.clip(blur(a, 1.2) - blur(a, 3.0), 0, 1)
+    rim = np.clip(blur(a, 1.2 * k) - blur(a, 3.0 * k), 0, 1)
     d = np.clip(d + rim * .06, 0, 1)
     # Ink cracked off along the folds, in broken flakes.
     gate = np.zeros((h, w), np.float32)
@@ -206,50 +206,51 @@ def age(rng, h, w, fold_y, folds_x):
     return np.clip(a, 0, 1)
 
 
-def sheet(mask, rng, fold_frac, show_from=None, calm=1.0):
+def sheet(mask, rng, fold_frac, show_from=None, calm=1.0, vfold=.55, k=1.0, cols=8):
     h, w = mask.shape
     # Grain comes off the scanned paper; a second, finer pass closes it down to newsprint.
     grain = read_texture('paper_grain.jpg')
-    grain = cv2.resize(tile(grain, int(h * 1.5) + 2, int(w * 1.5) + 2), (w, h), interpolation=cv2.INTER_AREA)
+    gs = 1.5 / k
+    grain = cv2.resize(tile(grain, int(h * gs) + 2, int(w * gs) + 2), (w, h), interpolation=cv2.INTER_AREA if gs >= 1 else cv2.INTER_CUBIC)
     tooth = norm(grain - blur(grain, 6))
-    tooth = np.clip(tooth * .8 + clouds(rng, h, w, [.9]) * .6, -4, 4)
+    tooth = np.clip(tooth * .8 + clouds(rng, h, w, [.9 * k]) * .6, -4, 4)
     fold_y = [h * fold_frac] if fold_frac else []
-    folds_x = [(w * .5, .55)] if fold_frac else []
+    folds_x = [(w * .5, vfold)] if vfold else []
     waves = norm(blur(read_texture('paper_waves.jpg'), 6))
 
     H = build_height(rng, h, w, fold_y, folds_x, waves, calm)
 
     # Real paper colour first, then toning.
     colour = read_texture('paper_colour.jpg', cv2.IMREAD_COLOR)[..., ::-1]
-    colour = cv2.resize(tile(colour, int(h * 1.5) + 2, int(w * 1.5) + 2), (w, h), interpolation=cv2.INTER_AREA)
+    colour = cv2.resize(tile(colour, int(h * gs) + 2, int(w * gs) + 2), (w, h), interpolation=cv2.INTER_AREA if gs >= 1 else cv2.INTER_CUBIC)
     relief = colour / (blur(colour, 26) + 1e-3)
     aged = age(rng, h, w, fold_y, folds_x)[..., None]
     base = to_linear(PAPER) * (1 - aged) + to_linear(PAPER_AGED) * aged
     cloud = clouds(rng, h, w, [14, 40, 110, 320], [.35, .55, .8, 1])[..., None]
-    fine = clouds(rng, h, w, [1.3, 3], [1, .6])[..., None]
+    fine = clouds(rng, h, w, [1.3 * k, 3 * k], [1, .6])[..., None]
     # Newsprint browns unevenly, losing blue before it loses anything else.
     stain = clouds(rng, h, w, [w * .16, w * .05], [1, .45])[..., None]
     base = base * (1 + np.clip(stain, -1.5, 2.5) * np.array([-.012, -.028, -.058], np.float32))
     paper = base * (1 + cloud * .030 + fine * .010) * (1 + (relief - 1) * .7)
     # Groundwood flecks.
-    fleck = smooth(clouds(rng, h, w, [1.0]), 3.1, 3.9)[..., None]
+    fleck = smooth(clouds(rng, h, w, [1.0 * k]), 3.1, 3.9)[..., None]
     paper *= 1 - fleck * .34
 
     # Show-through: the page on the other side, mirrored and diffused through the sheet.
     # Page two is this forme turned over, so the columns land between the columns.
     if show_from is not None:
         body = mask[int(h * show_from):]
-        cols = np.array_split(body, 8, axis=1)
-        order = [5, 0, 7, 2, 6, 1, 3, 4]
-        page2 = np.concatenate([np.roll(cols[i], (k * 311) % body.shape[0], 0) for k, i in enumerate(order)], 1)
+        parts = np.array_split(body, cols, axis=1)
+        order = [5, 0, 7, 2, 6, 1, 3, 4] if cols == 8 else [2, 0, 3, 1]
+        page2 = np.concatenate([np.roll(parts[i], (n * 311) % body.shape[0], 0) for n, i in enumerate(order)], 1)
         page2 = cv2.resize(tile(page2, h, page2.shape[1]), (w, h), interpolation=cv2.INTER_AREA)[:, ::-1]
         page2 = blur(np.roll(page2, int(w * .043), 1), w * .00052)
         paper *= (1 - page2[..., None] * .10 * (1 + cloud * .25))
 
-    ink = print_ink(mask, tooth, rng, fold_y, folds_x)[..., None]
+    ink = print_ink(mask, tooth, rng, fold_y, folds_x, k)[..., None]
     albedo = paper * (1 - ink) + to_linear(INK) * ink
     # Soft dark halo where ink soaked in around type.
-    albedo *= 1 - blur(ink[..., 0], 2.2)[..., None] * .05
+    albedo *= 1 - blur(ink[..., 0], 2.2 * k)[..., None] * .05
 
     lit = shade(H, tooth)[..., None]
     alpha = page_outline(rng, h, w, fold_y, calm)
@@ -266,7 +267,7 @@ def sheet(mask, rng, fold_frac, show_from=None, calm=1.0):
     return img, H, alpha
 
 
-def photograph(img, H, alpha, frame_w, margin, rng, supersample=2, calm=1.0, roll=-.5):
+def photograph(img, H, alpha, frame_w, margin, rng, supersample=2, calm=1.0, roll=-.5, layers=3):
     """Returns sRGB and alpha. Colour runs past the sheet, so filters never pull in a dark rim."""
     h, w = alpha.shape
     # Parallax from the sheet's relief, in page space.
@@ -307,7 +308,7 @@ def photograph(img, H, alpha, frame_w, margin, rng, supersample=2, calm=1.0, rol
     # The rest of the section lies under the front page, never quite square to it.
     colour = sheet_img.copy()
     cover = a.copy()
-    for ox, oy, rot, shade_k in ((4.5, 3.5, .0009, .86), (-2.5, 5.5, -.0007, .78), (6.5, 7.0, .0013, .70)):
+    for ox, oy, rot, shade_k in ((4.5, 3.5, .0009, .86), (-2.5, 5.5, -.0007, .78), (6.5, 7.0, .0013, .70))[:layers]:
         T = cv2.getRotationMatrix2D((F / 2, FH / 2), float(np.rad2deg(rot)), 1)
         T[0, 2] += ox * u
         T[1, 2] += oy * u
@@ -368,11 +369,36 @@ def photograph(img, H, alpha, frame_w, margin, rng, supersample=2, calm=1.0, rol
     return np.clip(rgb, 0, 1), np.clip(A, 0, 1)
 
 
+def press_sheet(mask_path, out, rng, *, width, quality, margin=.05, fold=.5, vfold=.55, roll=-.5, calm=1.0,
+                show=None, picture=None, lay_width=None, city=None, seed=1944, pitch=3.0, layers=3, k=1.0, cols=8):
+    mask = read_mask(mask_path)
+    if picture:
+        s = mask.shape[1] / lay_width
+        x, y, w, h = [int(round(picture[n] * s)) for n in 'xywh']
+        from press import develop
+        tone = 1 - develop(city, seed=seed)
+        tone = cv2.resize(tone, (w, h), interpolation=cv2.INTER_AREA if tone.shape[1] > w else cv2.INTER_CUBIC)
+        # Screen pitch set so the dots just resolve in the delivered photograph.
+        p = mask.shape[1] / (width * (1 - 2 * margin)) * pitch
+        mask[y:y + h, x:x + w] = np.maximum(mask[y:y + h, x:x + w], halftone(tone * .96, p))
+    img, H, alpha = sheet(mask, rng, fold, show, calm, vfold, k, cols)
+    rgb, cut = photograph(img, H, alpha, width, margin, rng, calm=calm, roll=roll, layers=layers)
+    bgra = np.dstack([rgb[..., ::-1], cut])
+    bgra = (bgra * 255 + .5).astype(np.uint8)
+    ok, buf = cv2.imencode('.webp', bgra, [cv2.IMWRITE_WEBP_QUALITY, quality])
+    if not ok:
+        raise RuntimeError('encode failed')
+    Path(out).write_bytes(buf.tobytes())
+    print(out, bgra.shape[1], 'x', bgra.shape[0], f'{len(buf) / 1e6:.2f} MB')
+
+
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument('mask')
-    p.add_argument('out')
-    p.add_argument('--layout')
+    p.add_argument('mask', nargs='?')
+    p.add_argument('out', nargs='?')
+    p.add_argument('--pages', help='layout.json: photograph every page it lists')
+    p.add_argument('--outdir', default='.')
+    p.add_argument('--only', help='comma-separated page names')
     p.add_argument('--city', help='stem of the rendered city, for the picture on the page')
     p.add_argument('--width', type=int, default=1800)
     p.add_argument('--quality', type=int, default=80)
@@ -383,31 +409,24 @@ def main():
     p.add_argument('--calm', type=float, default=1.0)
     p.add_argument('--roll', type=float, default=-.5)
     p.add_argument('--pitch', type=float, default=3.0, help='halftone pitch in delivered pixels')
+    p.add_argument('--ink', type=float, default=1.0, help='scale of ink and paper grain against the mask')
     a = p.parse_args()
-    rng = np.random.default_rng(a.seed)
-    mask = read_mask(a.mask)
-    show = None
-    if a.layout:
-        lay = json.loads(Path(a.layout).read_text(encoding='utf8'))
-        k = mask.shape[1] / lay['width']
-        show = lay.get('bodyFrom')
-        r = lay['picture']
-        x, y, w, h = [int(round(r[n] * k)) for n in 'xywh']
-        from press import develop
-        tone = 1 - develop(a.city, seed=a.seed)
-        tone = cv2.resize(tone, (w, h), interpolation=cv2.INTER_AREA if tone.shape[1] > w else cv2.INTER_CUBIC)
-        # Screen pitch set so the dots just resolve in the delivered photograph.
-        pitch = mask.shape[1] / (a.width * (1 - 2 * a.margin)) * a.pitch
-        mask[y:y + h, x:x + w] = np.maximum(mask[y:y + h, x:x + w], halftone(tone * .96, pitch))
-    img, H, alpha = sheet(mask, rng, 0 if a.no_fold else a.fold, show, a.calm)
-    rgb, cut = photograph(img, H, alpha, a.width, a.margin, rng, calm=a.calm, roll=a.roll)
-    bgra = np.dstack([rgb[..., ::-1], cut])
-    bgra = (bgra * 255 + .5).astype(np.uint8)
-    ok, buf = cv2.imencode('.webp', bgra, [cv2.IMWRITE_WEBP_QUALITY, a.quality])
-    if not ok:
-        raise RuntimeError('encode failed')
-    Path(a.out).write_bytes(buf.tobytes())
-    print(a.out, bgra.shape[1], 'x', bgra.shape[0], f'{len(buf) / 1e6:.2f} MB')
+    if a.pages:
+        lay = json.loads(Path(a.pages).read_text(encoding='utf8'))
+        base = Path(a.pages).parent
+        only = set(a.only.split(',')) if a.only else None
+        for pg in lay['pages']:
+            if only and pg['name'] not in only:
+                continue
+            press_sheet(base / f"{pg['name']}.png", Path(a.outdir) / f"{pg['name']}.webp", np.random.default_rng(pg['seed']),
+                        width=a.width, quality=a.quality, margin=pg.get('margin', a.margin), fold=pg.get('fold', 0),
+                        vfold=pg.get('vfold', 0), roll=pg.get('roll', 0), show=pg.get('bodyFrom'), picture=pg.get('picture'),
+                        lay_width=pg['width'], city=a.city, seed=pg['seed'], pitch=a.pitch, layers=pg.get('layers', 0),
+                        k=a.ink, cols=pg.get('cols', 4))
+        return
+    press_sheet(a.mask, a.out, np.random.default_rng(a.seed), width=a.width, quality=a.quality, margin=a.margin,
+                fold=0 if a.no_fold else a.fold, vfold=0 if a.no_fold else .55, roll=a.roll, calm=a.calm,
+                seed=a.seed, pitch=a.pitch, k=a.ink)
 
 
 if __name__ == '__main__':

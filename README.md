@@ -1,6 +1,12 @@
 <div align="center">
 
-<img src="assets/page.webp" width="100%" alt="The Radomir Times, a newspaper front page. Radomir is a designer and front-end developer. 1,770 contributions in the past year, 22 in the past week, current streak 2 days, longest 13 days, 3 stars, 13 public repositories. The picture is a city in which each tower is one week of contributions. Stack: TypeScript, JavaScript, Python, C++, C#, Go, Rust, Kotlin, Dart, HTML5, Next.js, Svelte, Tailwind CSS, Node.js, Flutter, Figma, Docker, Windows Terminal. Contacts: Telegram random_ak, email amazerust@mail.ru.">
+<img src="assets/front.webp" width="100%" alt="The Radomir Times, front page. Radomir is a designer and front-end developer. 1,770 contributions in the past year, 22 in the past week, current streak 2 days, longest 13 days, 3 stars, 13 public repositories. The picture is a city in which each tower is one week of contributions.">
+
+<img src="assets/news.webp" width="100%" alt="Page 2: Compiler Lays the Redstone So Nobody Has To; One Flutter App Serves Five Systems, and Installs Its Server; and recent commits off the wire.">
+
+<img src="assets/more.webp" width="100%" alt="Page 3: VPN Protocol Takes Aim at the Censors' Filters; Airport Game Gets a Mod Kit; A Folder Is All It Asks; Design Library Takes On the Three Identical Cards; Tank Dashboard Only Listens, and Writes Nothing to the Car; An Issue Goes In, a Reviewed Pull Request Comes Out; One Config Serves a Whole Fleet of AmneziaWG Servers.">
+
+<img src="assets/record.webp" width="100%" alt="Page 4: contributions by month, languages, repositories and the stack: TypeScript, JavaScript, Python, C++, C#, Go, Rust, Kotlin, Dart, HTML5, Next.js, Svelte, Tailwind CSS, Node.js, Flutter, Figma, Docker, Windows Terminal. Contacts: Telegram random_ak, email amazerust@mail.ru.">
 
 <a href="https://t.me/random_ak"><img src="assets/telegram.webp" width="47%" alt="By Telegram: random_ak"></a>
 <a href="mailto:amazerust@mail.ru"><img src="assets/email.webp" width="47%" alt="By post: amazerust@mail.ru"></a>

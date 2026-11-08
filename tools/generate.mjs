@@ -1,7 +1,7 @@
-// Sets the front page of The Radomir Times as a pure ink mask, the way the Times
-// made up its 1940s pages: eight narrow columns, stacked decks, one big picture,
-// columns that simply stop on a jump line at the foot. Stories are built from each
-// project's README and its public log by fixed rules: no model writes a word.
+// Sets The Radomir Times as pure ink masks, the way the Times made up its 1940s pages:
+// narrow columns, stacked decks, one big picture, columns that stop on a jump line.
+// Four sheets of four columns each, so GitHub shows the type at a size people can read.
+// Stories are built from each project's README and its public log by fixed rules: no model writes a word.
 // Run: npm ci && pip install -r requirements.txt && GH_TOKEN=... npm run build
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -139,8 +139,9 @@ function story(w, { head, style = 'latin', deck = [], deckB = [], special = true
   body.forEach((p) => out.push(...para(p, w)));
   return out;
 }
-const sep = (w) => [space(6), { h: 1.6, draw: (x, y) => rule(x, y, x + w, 1.6) }, space(6)];
-const thin = (w) => [space(5), { h: 1, draw: (x, y) => rule(x + w * .3, y, x + w * .7, .7) }, space(5)];
+// Rules between items: never left hanging at the foot of a column or opening the next one.
+const sep = (w) => [space(6), { h: 1.6, draw: (x, y) => rule(x, y, x + w, 1.6) }, space(6)].map((x) => ({ ...x, sep: true }));
+const thin = (w) => [space(5), { h: 1, draw: (x, y) => rule(x + w * .3, y, x + w * .7, .7) }, space(5)].map((x) => ({ ...x, sep: true }));
 function table(w, title, rows, note) {
   const out = [...centred([title], 'league', 17.5, 18, w)];
   out.push({ h: 3, draw: (x, y) => rule(x, y + 1.4, x + w, .8) });
@@ -177,12 +178,14 @@ function pour(galley, frames) {
     const limit = fr.y1 - (jump && fi === frames.length - 1 ? JUMP : 0);
     const placed = [];
     let y = fr.y;
+    while (i < galley.length && galley[i].sep) i++;
     while (i < galley.length && y + galley[i].h <= limit) {
       if (galley[i].mark) marks.push({ mark: galley[i].mark, col: fr.col });
       placed.push({ slug: galley[i], y });
       y += galley[i].h;
       i++;
     }
+    while (placed.length && placed.at(-1).slug.sep) y -= placed.pop().slug.h;
     // Spacing out a short column: compositors fed extra lead between slugs.
     const slack = limit - y;
     const between = Math.min(slack / Math.max(placed.length, 1), .8);
@@ -342,58 +345,14 @@ const compare = !prev7 ? 'after a blank week' : last7 === prev7 ? `the same as t
 const meanWord = last7 >= avgWeek * 1.15 ? 'above' : last7 <= avgWeek * .85 ? 'below' : 'near';
 const latest = week.map((c) => ({ ...c, say: subject(c.line) })).find((c) => c.say);
 
-const W = 1200, H = 1644, L = 22, R = W - 22, G = 12, CW = (R - L - 7 * G) / 8;
+
+// Four sheets, each four columns wide: on GitHub the type comes out twice the size of one big page.
+const W = 616, L = 22, R = W - 22, G = 12, CW = (R - L - 3 * G) / 4;
 const colX = (i) => L + i * (CW + G);
 const span = (n) => n * CW + (n - 1) * G;
-const FOOT = H - 22;
+const W2 = span(2);
 let s = '';
-
-// Ears and nameplate.
-const ear = (x, lines) => {
-  let e = box(x, 16, 150, 74);
-  lines.forEach((t, i) => { e += fit(t.s, x + 6, t.y, 138, t.f, t.z); });
-  return e;
-};
-s += ear(L, [{ s: '"All the Commits', f: 'cheltBI', z: 15.5, y: 41 }, { s: 'That Are Fit', f: 'cheltBI', z: 15.5, y: 58 }, { s: 'to Push"', f: 'cheltBI', z: 15.5, y: 75 }]);
-s += ear(R - 150, [{ s: 'LATE CITY EDITION', f: 'cheltB', z: 13.5, y: 36 }, { s: `Yesterday, ${plural(yesterday, 'contribution')};`, f: 'body', z: 9.6, y: 52 }, { s: `current run, ${daysOf(current)};`, f: 'body', z: 9.6, y: 65 }, { s: `longest, ${daysOf(longest)}. Stars, ${stars}.`, f: 'body', z: 9.6, y: 78 }]);
-s += fit('The Radomir Times', L + 164, 90, R - L - 328, 'mark', 104, { minSx: 1 });
-s += text(`Copyright, ${year}, by Radomir Aksenenko.`, W / 2, 110, { font: 'bodyI', size: 8.4, anchor: 'middle' });
-s += text('Entered as Public Matter at', L, 104, { font: 'body', size: 7.4 }) + text(`github.com/${LOGIN}`, L, 113, { font: 'body', size: 7.4 });
-
-// Dateline.
-const issue = weekNo.toLocaleString('en-US');
-s += rule(L, 118, R, .8) + rule(L, 120.6, R, .8);
-s += text(`VOL. ${vol} . . . No. ${issue}`, L + 2, 133, { font: 'cheltB', size: 11.5 });
-s += text(`KRASNOYARSK, ${dateLine}`, W / 2, 133, { font: 'cheltB', size: 11.5, anchor: 'middle' });
-s += text(`${plural(repos, 'PUBLIC REPOSITORY', 'PUBLIC REPOSITORIES')}`, R - 2, 133, { font: 'cheltB', size: 11.5, anchor: 'end' });
-s += rule(L, 139, R, 1.8);
-
-// Banner: Cheltenham Bold Italic in three decks, set to the full measure like June 6, 1944.
-const banner = ['RADOMIR, DESIGNER AND FRONT-END DEVELOPER,', `FILES ${total} CONTRIBUTIONS IN A YEAR;`, lead.banner];
-const fitsAt = (b) => (R - L) / widthOf(b, 'cheltBI', 1);
-const bz = Math.min(...banner.map(fitsAt));
-function setDeck(str, x, y, w, font, z) {
-  const words = str.split(' ');
-  const space = widthOf(' ', font, z);
-  const room = w - words.reduce((a, t) => a + widthOf(t, font, z), 0) - space * (words.length - 1);
-  // A compositor opened the word spaces first and touched the letters hardly at all.
-  const sp = Math.max(0, Math.min(.012, room / Math.max(1, str.length - 1) / z));
-  const set = words.map((t) => widthOf(t, font, z, 1, sp));
-  const gap = words.length > 1 ? (w - set.reduce((a, b) => a + b, 0)) / (words.length - 1) : Infinity;
-  if (gap > space * 1.7) return text(str, x + w / 2, y, { font, size: z, sp, anchor: 'middle' });
-  let out = '', cx = x;
-  words.forEach((t, i) => { out += text(t, cx, y, { font, size: z, sp }); cx += set[i] + gap; });
-  return out;
-}
-let deckY = 139 + 8;
-banner.forEach((b, i) => {
-  const z = Math.min(fitsAt(b), bz * 1.16);
-  deckY += z + (i ? 4.5 : 0);
-  s += setDeck(b, L, deckY, R - L, 'cheltBI', z);
-});
-const TOP = Math.round(deckY + 12);
-s += rule(L, TOP, R, 1.8);
-const Y0 = TOP + 7;
+let pageNo = 1;
 
 // The lead is written fresh from the numbers of the week.
 const DL = `KRASNOYARSK, ${shortDate}.`;
@@ -533,32 +492,34 @@ const summaryBody = [
   `${busy.length ? `${nameOf(busy[0][0])} was the busiest public project of the week, with ${plural(busy[0][1], 'commit')}.` : 'No public project moved this week.'} ${released[0] ? `The latest release anywhere in the account is ${nameOf(released[0].repo)} ${released[0].tag}, out ${stamp(released[0].date)}.` : ''}`,
   `${topLangs[0][0]} remains the largest language in the public code at ${pct(topLangs[0][1])}, followed by ${topLangs[1][0]} at ${pct(topLangs[1][1])} and ${topLangs[2][0]} at ${pct(topLangs[2][1])}. Markup and build files are not counted.`,
   `The longest history belongs to DiamondDrop, a Next.js and C# project made with a second author, at ${commitsOf('DiamondDrop')} commits. The newest repository, ${nameOf(newest.name)}, opened in ${MON[Number(newest.createdAt.slice(5, 7)) - 1]} ${newest.createdAt.slice(0, 4)}.`,
-  `The stack as advertised runs to ${stack.length} tools, set out in the panel on this page. Correspondence is welcome at the addresses printed at the foot.`,
+  `The stack as advertised runs to ${stack.length} tools, set out on Page 4, where the addresses for correspondence are printed as well.`,
 ];
+
 
 const overflow = {};
 const index = [];
-const place = (st, cols) => { if (!index.some(([n]) => n === nameOf(st.repo))) index.push([nameOf(st.repo), cols]); };
+const place = (st) => { if (!index.some(([n]) => n === nameOf(st.repo))) index.push([nameOf(st.repo), pageNo]); };
 const run = (name, galley, frames) => {
   const r = pour(galley, frames);
   s += r.s;
   overflow[name] = { left: r.left, short: frames.map((f) => Math.round(f.short)) };
-  r.marks.forEach(({ mark, col }) => place(mark, col));
+  r.marks.forEach(({ mark }) => place(mark));
 };
 const narrow = (st, style) => {
   const g = story(CW, { head: st.head, deck: st.deck, style: style ?? (st.head.length < 3 ? 'league' : 'latin'), body: st.text });
   g[0].mark = st;
   return g;
 };
-if (printed.length < 7) throw new Error(`only ${printed.length} stories have a public repository; the page needs 7`);
+if (printed.length < 8) throw new Error(`only ${printed.length} stories have a public repository; the section needs 8`);
 
 // Slots go to the freshest news. The coldest stories wait for a hole, and small holes take a note.
-const extras = printed.slice(7);
+const extras = printed.slice(8);
 const FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const WEEKDAY = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const byWeekday = WEEKDAY.map((_, i) => sum(days.filter((d) => new Date(`${d.date}T00:00:00Z`).getUTCDay() === i)));
 const bestWeekday = byWeekday.indexOf(Math.max(...byWeekday));
 const [bestMonthKey, bestMonthN] = [...months.entries()].slice(-12).sort((a, b) => b[1] - a[1])[0];
+const [quietMonthKey, quietMonthN] = [...months.entries()].slice(-12).sort((a, b) => a[1] - b[1])[0];
 const bestDay = days.reduce((a, d) => (d.contributionCount > a.contributionCount ? d : a), days[0]);
 const idle = days.filter((d) => !d.contributionCount).length;
 const notes = [
@@ -567,6 +528,9 @@ const notes = [
   `${WEEKDAY[bestWeekday]} has been the busiest day of the week, with ${plural(byWeekday[bestWeekday], 'contribution')} in twelve months.`,
   `The ledger shows ${plural(idle, 'day')} of the past year without a contribution.`,
   `Public repositories on the account hold ${plural(stars, 'star')} between them.`,
+  `The past four weeks brought ${plural(sum(days.slice(-28)), 'contribution')}.`,
+  `${FULL[Number(quietMonthKey.slice(5)) - 1]} was the quietest month of the past twelve, with ${plural(quietMonthN, 'contribution')}.`,
+  `Over the year the account averaged ${plural(avgWeek, 'contribution')} a week.`,
 ].map((t) => [...thin(CW), ...para(t, CW, BODY, 0)]);
 function fillTo(g, cap) {
   const out = [...g];
@@ -576,7 +540,9 @@ function fillTo(g, cap) {
     out.push(...piece);
     room -= heightOf(piece);
   }
-  for (let i = notes.findIndex((n) => heightOf(n) <= room); room > 12 && i >= 0; i = notes.findIndex((n) => heightOf(n) <= room)) {
+  // Column breaks waste up to a line each, so a filler must leave that much over.
+  const fits = (n) => heightOf(n) <= room - 14;
+  for (let i = notes.findIndex(fits); i >= 0; i = notes.findIndex(fits)) {
     const [note] = notes.splice(i, 1);
     out.push(...note);
     room -= heightOf(note);
@@ -584,161 +550,30 @@ function fillTo(g, cap) {
   return out;
 }
 
-// The picture, six columns wide; photo.py prints it through a halftone screen.
-const PX = colX(1), PW = span(6);
-s += fit('THE YEAR\'S WORK, ONE WEEK TO A TOWER', PX, Y0 + 27, PW, 'latin', 40, { minSx: .86 });
-const picY = Y0 + 34, picH = Math.round(PW * 1080 / 1800);
-const capY = picY + picH + 13;
-const FRAME_T = 0.74 * 0.85 * weeks.length * 12.5 * 1.03 * (1040 / 934) / (1800 / 1080);
-const storeys = (v) => Math.max(5, Math.round((26 + Math.sqrt(v / peak) * (FRAME_T - 26)) / 3.6));
-s += text('EVERY WEEK A BUILDING.', PX, capY, { font: 'bodyB', size: 9.6, sx: .92 });
-{
-  const lead2 = widthOf('EVERY WEEK A BUILDING. ', 'bodyB', 9.6, .92);
-  const thisWeek = weeks.at(-1);
-  const cap = `Each tower across the river stands for one week of contributions, the oldest at the left and this week's at the far right, where ${thisWeek ? `${plural(thisWeek, 'contribution')} so far have raised it ${storeys(thisWeek)} stories` : 'nothing has been built yet'}. The tallest, at ${storeys(peak)} stories, went up in the week of ${peakDate}. The town is rebuilt from GitHub's figures with every edition.`;
-  const st = { font: 'bodyI', size: 10, lead: 12, sx: .94 };
-  setLines(cap, PW, st, lead2).forEach((l, i) => { s += drawLine(l, PX, capY + i * st.lead, PW, st); });
+// Depth a galley needs to run out in n columns without a jump.
+function depthFor(g, n) {
+  let d = Math.ceil(heightOf(g) / n);
+  while (pour(g, Array.from({ length: n }, (_, i) => frame(0, CW, 0, d, i))).left > 0) d += 2;
+  return d;
 }
-const belowY = capY + 28;
-s += rule(PX, belowY, PX + PW, 1.8);
-
-// Under the picture, three pairs of columns; the foot of the page carries three more stories.
-const yFoot = 1352;
-const C1 = colX(1), C2 = colX(2), C3 = colX(3), C4 = colX(4), C5 = colX(5), C6 = colX(6), W2 = span(2);
 const wideHead = (st, hz) => [...centred(st.wide.head, 'cheltBI', hz, hz + 2, W2), ...dash(W2), ...centred(st.wide.deck, 'gothic', 14.8, 15, W2), ...dash(W2, 26), ...centred(['Special to The Radomir Times'], 'bodyI', 8.2, 10.5, W2)];
-function wideStory(name, st, x, x2, y, y1, cols, hz = 22) {
-  const gh = wideHead(st, hz);
+const wideDepth = (st, hz = 22) => heightOf(wideHead(st, hz)) + 3 + depthFor(st.text.flatMap((p) => para(p, CW)), 2);
+function wideStory(name, st, x, y, y1, hz = 22) {
   let gy = y;
-  for (const g of gh) { s += g.draw(x, gy); gy += g.h; }
+  for (const g of wideHead(st, hz)) { s += g.draw(x, gy); gy += g.h; }
   const top = gy + 3;
   const body = fillTo(st.text.flatMap((p) => para(p, CW)), 2 * (y1 - top));
-  run(name, body, [frame(x, CW, top, y1, cols.split('-')[0]), frame(x2, CW, top, y1, cols.split('-')[1])]);
-  s += vrule(x2 - G / 2, top, y1 - 2);
-  place(st, cols);
+  run(name, body, [frame(x, CW, top, y1), frame(x + CW + G, CW, top, y1)]);
+  s += vrule(x + CW + G / 2, top, y1 - 2);
+  place(st);
 }
-// Left pair: this month's busiest project.
-wideStory('A', printed[0], C1, C2, belowY + 7, yFoot - 4, '2-3');
-
-// Middle pair: the stack in line cuts, the summary under it.
-{
-  const x = C3, y = belowY + 8, ch = 26, rows = 6;
-  const boxH = 30 + rows * ch + 6;
-  s += box(x, y, W2, boxH, .9);
-  s += fit(`THE STACK: ${stack.length} TOOLS`, x + 6, y + 24, W2 - 12, 'latin', 28, { minSx: .86 });
-  s += rule(x + 6, y + 30, x + W2 - 6, .7);
-  stack.forEach(([name, ic], i) => {
-    const cw = (W2 - 12) / 3;
-    const cx = x + 8 + (i % 3) * cw, cy = y + 34 + Math.floor(i / 3) * ch;
-    s += `<path transform="translate(${cx.toFixed(1)} ${cy + 3}) scale(${15 / 24})" fill="${INK}" d="${ic.path}"/>`;
-    s += text(name, cx + 19, cy + 16, { font: 'gothic', size: 15.5, sx: Math.min(1, (cw - 23) / widthOf(name, 'gothic', 15.5)) });
-  });
-  const sy = y + boxH + 7;
-  let hy = sy;
-  for (const g of centred(['The Week\'s News Summarized'], 'cheltBI', 22, 24, W2)) { s += g.draw(C3, hy); hy += g.h; }
-  s += rule(C3 + W2 * .3, hy + 2, C3 + W2 * .7, .7);
-  const gs = [...para(summaryBody[0], CW, { ...BODY, font: 'bodyB' }, 0), space(2), ...summaryBody.slice(1).flatMap((p) => para(p, CW))];
-  run('sum', fillTo(gs, 2 * (yFoot - 4 - (hy + 7))), [frame(C3, CW, hy + 7, yFoot - 4, 4), frame(C4, CW, hy + 7, yFoot - 4, 5)]);
-  s += vrule(C4 - G / 2, hy + 7, yFoot - 6);
-  index.push(['Stack, The', '4-5'], ['News Summary', '4-5']);
+// Inside pages carry a folio: the paper's name and date, the page number at the outer corner.
+function folio(n) {
+  s += text(String(n), n % 2 ? R : L, 17, { font: 'cheltB', size: 13, anchor: n % 2 ? 'end' : 'start' });
+  s += text(`THE RADOMIR TIMES, ${dateLine}.`, W / 2, 16.5, { font: 'cheltB', size: 9.4, anchor: 'middle' });
+  s += rule(L, 22.5, R, 1.4);
+  return 31;
 }
-
-// Right pair: the second story, then the wire: real commits, newest first. The wire takes up
-// whatever depth the story leaves, so the two end together.
-{
-  const dispatches = [];
-  const seen = new Map();
-  for (const c of log) {
-    const say = subject(c.line);
-    if (!say) continue;
-    const n = seen.get(c.repo) ?? 0;
-    if (n >= 5) continue; // no one project gets the whole wire
-    seen.set(c.repo, n + 1);
-    dispatches.push({ ...c, say });
-    if (dispatches.length >= 22) break;
-  }
-  const rowH = 11.2;
-  const y0 = belowY + 7;
-  const headH = heightOf(wideHead(printed[1], 22)) + 3;
-  const textH = heightOf(printed[1].text.flatMap((p) => para(p, CW)));
-  const depthFor = (n) => (n ? 30 + n * rowH + 6 + 8 : 0);
-  // Largest wire that still leaves the story its room, but never fewer than eight rows.
-  let rows = Math.min(8, dispatches.length);
-  while (rows < dispatches.length && 2 * (yFoot - 4 - depthFor(rows + 1) - y0 - headH) >= textH) rows++;
-  const shown = dispatches.slice(0, rows);
-  const wireH = shown.length ? 30 + shown.length * rowH + 6 : 0;
-  const wireY = yFoot - 4 - wireH;
-  wideStory('B', printed[1], C5, C6, y0, wireY - 8, '6-7');
-  if (shown.length) {
-    s += rule(C5, wireY - 5, C5 + W2, 1.6);
-    s += fit('OFF THE WIRE', C5, wireY + 17, W2, 'latin', 26, { minSx: .86 });
-    s += rule(C5, wireY + 22, C5 + W2, .8);
-    shown.forEach((d, i) => {
-      const y = wireY + 33 + i * rowH;
-      const when = stamp(d.date);
-      const tag = `${nameOf(d.repo)}:`;
-      const tw = widthOf(tag, 'bodyB', 8.8, .88);
-      const ww = widthOf(when, 'body', 8.8, .88);
-      const room = W2 - tw - ww - 9;
-      let t = d.say;
-      while (t.length > 8 && widthOf(t, 'body', 8.8, .84) > room) { const cut = t.lastIndexOf(' '); t = t.slice(0, cut > 0 ? cut : t.length - 1); }
-      s += text(tag, C5, y, { font: 'bodyB', size: 8.8, sx: .88 });
-      s += text(t, C5 + tw + 3, y, { font: 'body', size: 8.8, sx: .84 });
-      s += text(when, C5 + W2, y, { font: 'body', size: 8.8, sx: .88, anchor: 'end' });
-    });
-    index.push(['Off the Wire', '6-7']);
-  }
-}
-
-// The foot.
-s += rule(PX, yFoot - 1, PX + PW, 1.8);
-const yF = yFoot + 6;
-wideStory('D', printed[3], C1, C2, yF, FOOT, '2-3', 20);
-run('E', fillTo(narrow(printed[4]), FOOT - yF), [frame(C5, CW, yF, FOOT, 6)]);
-run('F', fillTo(narrow(printed[5]), FOOT - yF), [frame(C6, CW, yF, FOOT, 7)]);
-s += vrule(C6 - G / 2, yF, FOOT);
-
-// Column 8: a story, then the tables of record and the quiet list.
-{
-  const tail = [...sep(CW), ...table(CW, 'REPOSITORIES', repoRows, 'Commits on the default branch.'), ...sep(CW), ...table(CW, 'OPENED, BY DATE', opened), ...sep(CW), ...story(CW, briefs)];
-  const room = FOOT - Y0 - heightOf(tail);
-  run('c7', [...fillTo(clip(narrow(printed[2]), CW, room), room), ...tail], [frame(colX(7), CW, Y0, FOOT, 8)]);
-  index.push(['Opened, by Date', 8], ['Repositories', 8]);
-}
-// Column 1: the lead, the two tables, then a story down to the foot.
-{
-  const top = [...story(CW, { ...leadStory, special: false }), ...sep(CW), ...table(CW, 'THE LEDGER', ledger, 'Contributions by month, GitHub\'s own count.'), ...sep(CW), ...table(CW, 'THE PUBLIC CODE', topLangs.map(([n, v]) => [n, pct(v)])), ...sep(CW)];
-  run('c0', fillTo([...top, ...narrow(printed[6])], FOOT - Y0), [frame(colX(0), CW, Y0, FOOT, 1)]);
-  index.push(['Ledger, The', 1], ['Public Code, The', 1], ['Week, The', 1]);
-}
-
-// Letters to the Editor and the index, set last so the index can name what actually landed.
-{
-  const y = yF, lx = C3, lh = 92;
-  s += box(lx, y, W2, lh, .9);
-  s += fit('LETTERS TO THE EDITOR', lx + 8, y + 22, W2 - 16, 'latin', 27, { minSx: .86 });
-  s += rule(lx + 8, y + 27, lx + W2 - 8, .7);
-  s += text('By Telegram', lx + W2 / 2, y + 38, { font: 'bodyI', size: 8.6, anchor: 'middle' });
-  s += fit('random_ak', lx + 10, y + 53, W2 - 20, 'cheltB', 15.5, { minSx: 1 });
-  s += text('By Post', lx + W2 / 2, y + 66, { font: 'bodyI', size: 8.6, anchor: 'middle' });
-  s += fit('amazerust@mail.ru', lx + 10, y + 82, W2 - 20, 'cheltB', 15.5, { minSx: 1 });
-  const iy = y + lh + 6;
-  s += fit('INDEX TO THIS PAGE', lx, iy + 14, W2, 'league', 17, { minSx: 1 });
-  s += rule(lx, iy + 18, lx + W2, .8);
-  const entries = index.slice().sort((a, b) => a[0].localeCompare(b[0], 'en'));
-  const half = Math.ceil(entries.length / 2);
-  const step = Math.min(11.4, (FOOT - iy - 26) / half);
-  entries.forEach(([n, c], i) => {
-    const cx = i < half ? C3 : C4, cy = iy + 28 + (i < half ? i : i - half) * step;
-    const v = `Col. ${c}`;
-    const vw = widthOf(v, 'body', 8.8, .88);
-    s += text(n, cx, cy, { font: 'body', size: 8.8, sx: Math.min(.88, .88 * (CW - vw - 5) / widthOf(n, 'body', 8.8, .88)) });
-    s += text(v, cx + CW, cy, { font: 'body', size: 8.8, sx: .88, anchor: 'end' });
-  });
-}
-
-// Column rules run from the banner to the trim; the inner ones start under the picture.
-for (const i of [1, 7]) s += vrule(colX(i) - G / 2, Y0 - 2, FOOT);
-for (const i of [3, 5]) s += vrule(colX(i) - G / 2, belowY + 2, FOOT);
 
 const svg = (w, h, body) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}">${body}</svg>`;
 const raster = (name, source, w, h, width) => {
@@ -746,8 +581,206 @@ const raster = (name, source, w, h, width) => {
   const r = new Resvg(source, { fitTo: { mode: 'width', value: width }, background: 'rgba(0,0,0,0)', font: { loadSystemFonts: false } });
   writeFileSync(join(build, `${name}.png`), r.render().asPng());
 };
-const MASK_W = 3400;
-raster('page', svg(W, H, s), W, H, MASK_W);
+const MASK_W = 3000;
+const pages = [];
+function closePage(name, h, opts) {
+  h = Math.round(h);
+  raster(name, svg(W, h, s), W, h, MASK_W);
+  pages.push({ name, width: W, height: h, ...opts, bodyFrom: opts.bodyFrom != null ? opts.bodyFrom / h : undefined });
+  s = '';
+  pageNo++;
+}
+
+// ---- Page 1: nameplate, banner, the town, the lead. ----
+const issue = weekNo.toLocaleString('en-US');
+const EAR = 88;
+const ear = (x, lines) => {
+  let e = box(x, 12, EAR, 54);
+  lines.forEach((t) => { e += fit(t.s, x + 5, t.y, EAR - 10, t.f, t.z); });
+  return e;
+};
+s += ear(L, [{ s: '"All the Commits', f: 'cheltBI', z: 10.8, y: 31 }, { s: 'That Are Fit', f: 'cheltBI', z: 10.8, y: 44 }, { s: 'to Push"', f: 'cheltBI', z: 10.8, y: 57 }]);
+s += ear(R - EAR, [{ s: 'LATE CITY EDITION', f: 'cheltB', z: 9, y: 27 }, { s: `Yesterday, ${plural(yesterday, 'contribution')};`, f: 'body', z: 7.6, y: 39 }, { s: `current run, ${daysOf(current)};`, f: 'body', z: 7.6, y: 49.5 }, { s: `longest, ${daysOf(longest)}. Stars, ${stars}.`, f: 'body', z: 7.6, y: 60 }]);
+s += fit('The Radomir Times', L + EAR + 6, 63, R - L - 2 * EAR - 12, 'mark', 90, { minSx: 1 });
+s += text(`Copyright, ${year}, by Radomir Aksenenko.`, W / 2, 77, { font: 'bodyI', size: 7.2, anchor: 'middle' });
+s += rule(L, 82, R, .8) + rule(L, 84.4, R, .8);
+s += text(`VOL. ${vol} . . . No. ${issue}`, L + 1, 96, { font: 'cheltB', size: 9.4 });
+s += text(`KRASNOYARSK, ${dateLine}`, W / 2, 96, { font: 'cheltB', size: 9.4, anchor: 'middle' });
+s += text(plural(repos, 'PUBLIC REPOSITORY', 'PUBLIC REPOSITORIES'), R - 1, 96, { font: 'cheltB', size: 9.4, anchor: 'end' });
+s += rule(L, 101, R, 1.6);
+
+// Banner: Cheltenham Bold Italic in three decks to the full measure, like June 6, 1944.
+const banner = ['RADOMIR, DESIGNER AND FRONT-END DEVELOPER,', `FILES ${total} CONTRIBUTIONS IN A YEAR;`, lead.banner];
+const fitsAt = (b) => (R - L) / widthOf(b, 'cheltBI', 1);
+const bz = Math.min(...banner.map(fitsAt));
+function setDeck(str, x, y, w, font, z) {
+  const words = str.split(' ');
+  const sp0 = widthOf(' ', font, z);
+  const room = w - words.reduce((a, t) => a + widthOf(t, font, z), 0) - sp0 * (words.length - 1);
+  // A compositor opened the word spaces first and touched the letters hardly at all.
+  const sp = Math.max(0, Math.min(.012, room / Math.max(1, str.length - 1) / z));
+  const set = words.map((t) => widthOf(t, font, z, 1, sp));
+  const gap = words.length > 1 ? (w - set.reduce((a, b) => a + b, 0)) / (words.length - 1) : Infinity;
+  if (gap > sp0 * 1.7) return text(str, x + w / 2, y, { font, size: z, sp, anchor: 'middle' });
+  let out = '', cx = x;
+  words.forEach((t, i) => { out += text(t, cx, y, { font, size: z, sp }); cx += set[i] + gap; });
+  return out;
+}
+let deckY = 101 + 5;
+banner.forEach((b, i) => {
+  const z = Math.min(fitsAt(b), bz * 1.16);
+  deckY += z + (i ? 3 : 0);
+  s += setDeck(b, L, deckY, R - L, 'cheltBI', z);
+});
+const TOP = Math.round(deckY + 8);
+s += rule(L, TOP, R, 1.6);
+
+// The picture across all four columns; photo.py prints it through a halftone screen.
+const PX = L, PW = R - L;
+s += fit('THE YEAR\'S WORK, ONE WEEK TO A TOWER', PX, TOP + 27, PW, 'latin', 36, { minSx: .86 });
+const picY = TOP + 33, picH = Math.round(PW * 1080 / 1800);
+const capY = picY + picH + 13;
+const FRAME_T = 0.74 * 0.85 * weeks.length * 12.5 * 1.03 * (1040 / 934) / (1800 / 1080);
+const storeys = (v) => Math.max(5, Math.round((26 + Math.sqrt(v / peak) * (FRAME_T - 26)) / 3.6));
+let belowY;
+{
+  s += text('EVERY WEEK A BUILDING.', PX, capY, { font: 'bodyB', size: 9.6, sx: .92 });
+  const lead2 = widthOf('EVERY WEEK A BUILDING. ', 'bodyB', 9.6, .92);
+  const thisWeek = weeks.at(-1);
+  const cap = `Each tower across the river stands for one week of contributions, the oldest at the left and this week's at the far right, where ${thisWeek ? `${plural(thisWeek, 'contribution')} so far have raised it ${storeys(thisWeek)} stories` : 'nothing has been built yet'}. The tallest, at ${storeys(peak)} stories, went up in the week of ${peakDate}. The town is rebuilt from GitHub's figures with every edition.`;
+  const st = { font: 'bodyI', size: 10, lead: 12, sx: .94 };
+  const lines = setLines(cap, PW, st, lead2);
+  lines.forEach((l, i) => { s += drawLine(l, PX, capY + i * st.lead, PW, st); });
+  belowY = capY + (lines.length - 1) * st.lead + 8;
+}
+s += rule(L, belowY, R, 1.6);
+{
+  const y0 = belowY + 7;
+  const leadG = story(CW, { ...leadStory, special: false });
+  const sumHead = centred(['The Week\'s News Summarized'], 'cheltBI', 19, 21, W2);
+  const sumG = [...centred([summaryBody[0]], 'bodyB', 9.8, 11.3, CW), space(2), ...summaryBody.slice(1).flatMap((p) => para(p, CW))];
+  const sumTop = heightOf(sumHead) + 9;
+  // The lead jumps if it must: a front page never runs a story out at any length.
+  const depth = Math.min(330, Math.max(depthFor(leadG, 2), sumTop + depthFor(sumG, 2)));
+  const foot = y0 + depth;
+  run('lead', leadG, [frame(colX(0), CW, y0, foot), frame(colX(1), CW, y0, foot)]);
+  let hy = y0;
+  for (const g of sumHead) { s += g.draw(colX(2), hy); hy += g.h; }
+  s += rule(colX(2) + W2 * .3, hy + 2, colX(2) + W2 * .7, .7);
+  run('sum', fillTo(sumG, 2 * (foot - y0 - sumTop)), [frame(colX(2), CW, y0 + sumTop, foot), frame(colX(3), CW, y0 + sumTop, foot)]);
+  s += vrule(colX(1) - G / 2, y0 - 2, foot) + vrule(colX(2) - G / 2, y0 - 2, foot) + vrule(colX(3) - G / 2, y0 + sumTop - 2, foot);
+  index.push(['Week, The', 1], ['News Summary', 1]);
+  closePage('front', foot + 16, { bodyFrom: TOP, picture: { x: PX, y: picY, w: PW, h: picH }, fold: .5, vfold: .5, roll: -.5, seed: 1944, layers: 3 });
+}
+
+// ---- Page 2: the two stories with the most public work, and the wire. ----
+{
+  const y0 = folio(2);
+  const [A, B] = printed;
+  const d = Math.min(560, Math.max(wideDepth(A), wideDepth(B)));
+  wideStory('A', A, colX(0), y0, y0 + d);
+  wideStory('B', B, colX(2), y0, y0 + d);
+  s += vrule(colX(2) - G / 2, y0, y0 + d);
+  let end = y0 + d;
+  const dispatches = [];
+  const seen = new Map();
+  for (const c of log) {
+    const say = subject(c.line);
+    if (!say) continue;
+    const n = seen.get(c.repo) ?? 0;
+    if (n >= 4) continue; // no one project gets the whole wire
+    seen.set(c.repo, n + 1);
+    dispatches.push({ ...c, say });
+    if (dispatches.length >= 12) break;
+  }
+  if (dispatches.length) {
+    const rowH = 11.6, wy = end + 8, half = Math.ceil(dispatches.length / 2);
+    s += rule(L, wy, R, 1.6);
+    s += fit('OFF THE WIRE', L, wy + 25, R - L, 'latin', 30, { minSx: .86 });
+    s += rule(L, wy + 31, R, .8);
+    dispatches.forEach((d, i) => {
+      const x = colX(i < half ? 0 : 2), y = wy + 43 + (i % half) * rowH;
+      const when = stamp(d.date);
+      const tag = `${nameOf(d.repo)}:`;
+      const tw = widthOf(tag, 'bodyB', 8.8, .88);
+      const ww = widthOf(when, 'body', 8.8, .88);
+      const room = W2 - tw - ww - 9;
+      let t = d.say;
+      while (t.length > 8 && widthOf(t, 'body', 8.8, .84) > room) { const cut = t.lastIndexOf(' '); t = t.slice(0, cut > 0 ? cut : t.length - 1); }
+      s += text(tag, x, y, { font: 'bodyB', size: 8.8, sx: .88 });
+      s += text(t, x + tw + 3, y, { font: 'body', size: 8.8, sx: .84 });
+      s += text(when, x + W2, y, { font: 'body', size: 8.8, sx: .88, anchor: 'end' });
+    });
+    end = wy + 43 + (half - 1) * rowH + 4;
+    s += vrule(colX(2) - G / 2, wy + 35, end);
+    index.push(['Off the Wire', 2]);
+  }
+  closePage('news', end + 16, { bodyFrom: y0, fold: .55, roll: .45, seed: 1945 });
+}
+
+// ---- Page 3: two more stories over a row of four, cut where the page ends. ----
+{
+  const y0 = folio(3);
+  const d = Math.min(400, Math.max(wideDepth(printed[2], 20), wideDepth(printed[3], 20)));
+  wideStory('C', printed[2], colX(0), y0, y0 + d, 20);
+  wideStory('D', printed[3], colX(2), y0, y0 + d, 20);
+  s += vrule(colX(2) - G / 2, y0, y0 + d);
+  const y1 = y0 + d + 6;
+  s += rule(L, y1, R, 1.6);
+  const row = printed.slice(4, 8).map((st) => narrow(st));
+  const rd = Math.min(320, Math.max(...row.map((g) => depthFor(g, 1))));
+  row.forEach((g, i) => run(`n${i}`, fillTo(g, rd), [frame(colX(i), CW, y1 + 7, y1 + 7 + rd)]));
+  for (const i of [1, 2, 3]) s += vrule(colX(i) - G / 2, y1 + 5, y1 + 7 + rd);
+  closePage('more', y1 + 7 + rd + 16, { bodyFrom: y0, fold: .47, roll: -.3, seed: 1946 });
+}
+
+// ---- Page 4: the record in figures, the stack, letters and the index. ----
+{
+  const y0 = folio(4);
+  s += fit('THE RECORD IN FIGURES', L, y0 + 27, R - L, 'latin', 36, { minSx: .86 });
+  s += rule(L, y0 + 33, R, .8);
+  const yT = y0 + 41;
+  const c0 = [...table(CW, 'THE LEDGER', ledger, 'Contributions by month, GitHub\'s own count.'), ...sep(CW), ...table(CW, 'THE PUBLIC CODE', topLangs.map(([n, v]) => [n, pct(v)])), ...sep(CW), ...table(CW, 'BY DAY OF THE WEEK', [1, 2, 3, 4, 5, 6, 0].map((i) => [WEEKDAY[i], byWeekday[i].toLocaleString('en-US')]))];
+  const c1 = [...table(CW, 'REPOSITORIES', repoRows, 'Commits on the default branch.'), ...sep(CW), ...story(CW, briefs)];
+  index.push(['Ledger, The', 4], ['Public Code, The', 4], ['Repositories', 4], ['Stack, The', 4]);
+  const ch = 26, stackH = 30 + Math.ceil(stack.length / 3) * ch + 6, lh = 92;
+  const entries = index.slice().sort((a, b) => a[0].localeCompare(b[0], 'en'));
+  const half = Math.ceil(entries.length / 2), step = 11.4;
+  const rightH = stackH + 8 + lh + 8 + 30 + half * step;
+  const d = Math.ceil(Math.max(heightOf(c0), heightOf(c1), rightH));
+  run('c0', fillTo(c0, d), [frame(colX(0), CW, yT, yT + d)]);
+  run('c1', fillTo(c1, d), [frame(colX(1), CW, yT, yT + d)]);
+  const x = colX(2);
+  s += box(x, yT, W2, stackH, .9);
+  s += fit(`THE STACK: ${stack.length} TOOLS`, x + 6, yT + 24, W2 - 12, 'latin', 28, { minSx: .86 });
+  s += rule(x + 6, yT + 30, x + W2 - 6, .7);
+  stack.forEach(([name, ic], i) => {
+    const cw = (W2 - 12) / 3;
+    const cx = x + 8 + (i % 3) * cw, cy = yT + 34 + Math.floor(i / 3) * ch;
+    s += `<path transform="translate(${cx.toFixed(1)} ${cy + 3}) scale(${15 / 24})" fill="${INK}" d="${ic.path}"/>`;
+    s += text(name, cx + 19, cy + 16, { font: 'gothic', size: 15.5, sx: Math.min(1, (cw - 23) / widthOf(name, 'gothic', 15.5)) });
+  });
+  const ly = yT + stackH + 8;
+  s += box(x, ly, W2, lh, .9);
+  s += fit('LETTERS TO THE EDITOR', x + 8, ly + 22, W2 - 16, 'latin', 27, { minSx: .86 });
+  s += rule(x + 8, ly + 27, x + W2 - 8, .7);
+  s += text('By Telegram', x + W2 / 2, ly + 38, { font: 'bodyI', size: 8.6, anchor: 'middle' });
+  s += fit('random_ak', x + 10, ly + 53, W2 - 20, 'cheltB', 15.5, { minSx: 1 });
+  s += text('By Post', x + W2 / 2, ly + 66, { font: 'bodyI', size: 8.6, anchor: 'middle' });
+  s += fit('amazerust@mail.ru', x + 10, ly + 82, W2 - 20, 'cheltB', 15.5, { minSx: 1 });
+  const iy = ly + lh + 8;
+  s += fit('INDEX TO THIS SECTION', x, iy + 15, W2, 'league', 18, { minSx: 1 });
+  s += rule(x, iy + 19, x + W2, .8);
+  entries.forEach(([n, p], i) => {
+    const cx = i < half ? colX(2) : colX(3), cy = iy + 30 + (i % half) * step;
+    const v = `Page ${p}`;
+    const vw = widthOf(v, 'body', 8.8, .88);
+    s += text(n, cx, cy, { font: 'body', size: 8.8, sx: Math.min(.88, .88 * (CW - vw - 5) / widthOf(n, 'body', 8.8, .88)) });
+    s += text(v, cx + CW, cy, { font: 'body', size: 8.8, sx: .88, anchor: 'end' });
+  });
+  for (const i of [1, 2]) s += vrule(colX(i) - G / 2, yT - 2, yT + d);
+  closePage('record', yT + d + 16, { bodyFrom: y0, fold: .42, roll: .3, seed: 1947 });
+}
 
 // Contacts are separate clippings, so each can be a real link.
 const clipping = (name, title, handle) => {
@@ -761,15 +794,22 @@ const clipping = (name, title, handle) => {
 clipping('telegram', 'WRITE TO THE EDITOR BY TELEGRAM', 'random_ak');
 clipping('email', 'WRITE TO THE EDITOR BY POST', 'amazerust@mail.ru');
 
-const label = `The Radomir Times, a newspaper front page. Radomir is a designer and front-end developer. ${total} contributions in the past year, ${last7} in the past week, current streak ${daysOf(current)}, longest ${daysOf(longest)}, ${stars} stars, ${repos} public repositories. The picture is a city in which each tower is one week of contributions. Stack: ${stack.map(([n]) => n).join(', ')}. Contacts: Telegram random_ak, email amazerust@mail.ru.`;
-writeFileSync(join(build, 'layout.json'), JSON.stringify({ width: W, height: H, bodyFrom: Y0 / H, picture: { x: PX, y: picY, w: PW, h: picH }, weeks, weekDates, label, peakDate }, null, 1));
+const label = `The Radomir Times, front page. Radomir is a designer and front-end developer. ${total} contributions in the past year, ${last7} in the past week, current streak ${daysOf(current)}, longest ${daysOf(longest)}, ${stars} stars, ${repos} public repositories. The picture is a city in which each tower is one week of contributions.`;
+const alts = {
+  front: label,
+  news: `Page 2: ${printed[0].wide.head.join(' ')}; ${printed[1].wide.head.join(' ')}; and recent commits off the wire.`,
+  more: `Page 3: ${printed.slice(2, 8).map((st) => st.wide.head.join(' ')).join('; ')}.`,
+  record: `Page 4: contributions by month, languages, repositories and the stack: ${stack.map(([n]) => n).join(', ')}. Contacts: Telegram random_ak, email amazerust@mail.ru.`,
+};
+writeFileSync(join(build, 'layout.json'), JSON.stringify({ width: W, pages, weeks, weekDates, label, peakDate }, null, 1));
 const ranNext = (lead.key ? [...ran.filter((r) => r.key !== lead.key), { key: lead.key, week: weekNo }] : ran).slice(-12);
 writeFileSync(STATE, `${JSON.stringify({ stars, repos, total: cal.totalContributions, ran: ranNext }, null, 1)}\n`);
 
-// The README around the picture: links the page can only print, and the edition as real text.
+// The README around the pages: links the paper can only print, and the edition as real text.
 const linkOf = (n) => `[${nameOf(n)}](${repo[n].url})`;
 const onWire = [...new Set([...printed.map((st) => st.repo), ...log.map((c) => c.repo)])].filter((n) => repo[n]);
 const plain = (t) => t.replace(/[<>]/g, '');
+const attr = (t) => plain(t).replace(/"/g, '&quot;');
 const edition = [
   `### ${plain(lead.head.join(' ')).replace(/\s+/g, ' ')}`, '',
   ...leadStory.body.map(plain).flatMap((p) => [p, '']),
@@ -777,7 +817,7 @@ const edition = [
 ];
 const readme = `<div align="center">
 
-<img src="assets/page.webp" width="100%" alt="${label.replace(/"/g, '&quot;')}">
+${pages.map((p) => `<img src="assets/${p.name}.webp" width="100%" alt="${attr(alts[p.name])}">`).join('\n\n')}
 
 <a href="https://t.me/random_ak"><img src="assets/telegram.webp" width="47%" alt="By Telegram: random_ak"></a>
 <a href="mailto:amazerust@mail.ru"><img src="assets/email.webp" width="47%" alt="By post: amazerust@mail.ru"></a>
@@ -794,6 +834,7 @@ ${edition.join('\n')}
 `;
 writeFileSync(join(here, '..', 'README.md'), readme);
 console.log('overflow', JSON.stringify(overflow));
-console.log('printed', dateLine, `VOL. ${vol} No. ${issue}`, total, 'week', last7, 'prev', prev7, 'commits', week.length, current, longest, stars, repos, peak, peakDate, 'lead', lead.banner, 'bz', bz.toFixed(1), 'top', TOP, 'picH', picH, 'below', belowY);
+console.log('pages', pages.map((p) => `${p.name} ${p.height}`).join(', '));
+console.log('printed', dateLine, `VOL. ${vol} No. ${issue}`, total, 'week', last7, 'lead', lead.banner, 'bz', bz.toFixed(1));
 console.log('order', printed.map((st) => st.repo).join(' > '));
 console.log('index', index.map(([n, c]) => `${n}:${c}`).join(', '), '| unused', extras.map((st) => st.repo).join(','), '| notes left', notes.length);
