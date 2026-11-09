@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/front.webp" width="100%" alt="The Radomir Times, front page. Radomir is a designer and front-end developer. 1,770 contributions in the past year, 22 in the past week, current streak 2 days, longest 13 days, 3 stars, 13 public repositories. The picture is a city in which each tower is one week of contributions.">
+<img src="assets/front.webp" width="100%" alt="The Radomir Times, front page. Radomir is a designer and front-end developer. 1,792 contributions in the past year, 44 in the past week, current streak 2 days, longest 13 days, 3 stars, 13 public repositories. The picture is a city in which each tower is one week of contributions.">
 
 <img src="assets/news.webp" width="100%" alt="Page 2: Compiler Lays the Redstone So Nobody Has To; One Flutter App Serves Five Systems, and Installs Its Server; and recent commits off the wire.">
 
@@ -18,21 +18,21 @@
 <details>
 <summary><sub>Read this edition as text</sub></summary>
 
-### OBSIDIAN APP GOES OUT AS V2.0.7
+### OBSIDIAN APP GOES OUT AS V2.0.8
 
-KRASNOYARSK, Nov. 8. GitHub's ledger shows 22 contributions for the seven days ended today, down from 42 the week before and below the year's weekly mean of 34. Obsidian App went out as v2.0.7 on Nov. 7, with 16 commits on the branch in the past seven days.
+KRASNOYARSK, Nov. 9. GitHub's ledger shows 44 contributions for the seven days ended today, up from 42 the week before and above the year's weekly mean of 34. Obsidian App went out as v2.0.8 on Nov. 8, with 21 commits on the branch in the past seven days.
 
-The public log for the week holds 18 commits in 2 repositories: Obsidian App with 16 and Obsidian VPN with 2.
+The public log for the week holds 28 commits in 2 repositories: Obsidian App with 21 and Obsidian VPN with 7.
 
-The most recent entry, under Obsidian App on Nov. 7, reads: "update to separate client addresses and the iOS memory fix."
+The most recent entry, under Obsidian App on Nov. 8, reads: "update to the speed work (TCP autotuning, UDP GSO."
 
-Radomir is a designer and front-end developer, the profile states. The account opened in October, 2022, and holds 13 public repositories, with Dart, Go, JavaScript, C#, TypeScript, Python, Kotlin, Rust and C++ as their leading languages.
+Radomir is a designer and front-end developer, the profile states. The account opened in October, 2022, and holds 13 public repositories, with Go, JavaScript, Dart, C#, TypeScript, Python, Kotlin, Rust and C++ as their leading languages.
 
-GitHub credits it with 1,770 contributions in the past twelve months, private work included. The heaviest week began on Sept. 27 and brought 166. The longest unbroken run stands at 13 days.
+GitHub credits it with 1,792 contributions in the past twelve months, private work included. The heaviest week began on Sept. 27 and brought 166. The longest unbroken run stands at 13 days.
 
 ### [Compiler Lays the Redstone So Nobody Has To](https://github.com/Radomir-Aksenenko/code_to_redstone)
 
-KRASNOYARSK, Nov. 8. Nobody need lay dust, repeaters and comparators by hand any longer, the code_to_redstone README says. A circuit is described in code or as a graph of nodes, and the compiler returns a finished build as a .schem, .litematic or .mcfunction file.
+KRASNOYARSK, Nov. 9. Nobody need lay dust, repeaters and comparators by hand any longer, the code_to_redstone README says. A circuit is described in code or as a graph of nodes, and the compiler returns a finished build as a .schem, .litematic or .mcfunction file.
 
 The repository took 42 commits in the past month; the latest of them reads, "dense router and compactness test; add README and."
 
@@ -44,17 +44,17 @@ Cells come in fast and compact modes, among them an XOR made from two comparator
 
 ### [One Flutter App Serves Five Systems, and Installs Its Server](https://github.com/Radomir-Aksenenko/ObsidianVPN-App)
 
-KRASNOYARSK, Nov. 8. A client for Obsidian followed in a separate repository, ObsidianVPN-App, now at 50 commits. It is one Flutter application for Windows, macOS, Linux, Android and iOS, and it can set up the Go server on an owner's own VPS over SSH, along with a small keyserver script.
+KRASNOYARSK, Nov. 9. A client for Obsidian followed in a separate repository, ObsidianVPN-App, now at 55 commits. It is one Flutter application for Windows, macOS, Linux, Android and iOS, and it can set up the Go server on an owner's own VPS over SSH, along with a small keyserver script.
 
-The repository took 21 commits in the past month; the latest of them reads, "update to separate client addresses and the iOS memory fix." The current release is v2.0.7, out Nov. 7.
+The repository took 26 commits in the past month; the latest of them reads, "update to the speed work (TCP autotuning, UDP GSO." The current release is v2.0.8, out Nov. 8.
 
 The Go core is attached as a submodule. The apps are built only in GitHub Actions, where one workflow compiles for all five systems and another publishes the release.
 
 ### [VPN Protocol Takes Aim at the Censors' Filters](https://github.com/Radomir-Aksenenko/ObsidianVPN)
 
-KRASNOYARSK, Nov. 8. Obsidian, an open layer-3 network protocol, was built to defeat deep packet inspection, active probing and state-level censors such as the TSPU system, according to its specification.
+KRASNOYARSK, Nov. 9. Obsidian, an open layer-3 network protocol, was built to defeat deep packet inspection, active probing and state-level censors such as the TSPU system, according to its specification.
 
-The repository took 6 commits in the past month; the latest of them reads, "raise the iOS memory limit, repair port hopping, mask." The current release is v1.2.0, out Oct. 8.
+The repository took 11 commits in the past month; the latest of them reads, "log the congestion control connections really get." The current release is v1.2.0, out Oct. 8.
 
 Application-level proxies like VLESS, Shadowsocks and Trojan work on streams. Obsidian creates a full virtual network interface instead. Its README claims throughput above 350 megabits a second and no TCP-over-TCP slowdown for games, streaming and live calls.
 
@@ -66,7 +66,7 @@ Android, iOS, Linux, macOS and Windows are listed as supported. The project call
 
 ### [Airport Game Gets a Mod Kit; A Folder Is All It Asks](https://github.com/Radomir-Aksenenko/Airport-Security-Lib-ASL)
 
-KRASNOYARSK, Nov. 8. ASL, a modding framework for Airport Security Sucks!, turns a bare BepInEx 6 install into a platform where a folder dropped in mods/ simply loads. It has 2 stars so far.
+KRASNOYARSK, Nov. 9. ASL, a modding framework for Airport Security Sucks!, turns a bare BepInEx 6 install into a platform where a folder dropped in mods/ simply loads. It has 2 stars so far.
 
 Its last push came on Oct. 15. The current release is v0.1.0, out June 17.
 
@@ -76,7 +76,7 @@ A full networking stack is in place as well, with identity, synced state and mes
 
 ### [Design Library Takes On the Three Identical Cards](https://github.com/Radomir-Aksenenko/ultimate-anti-ai-ui-slop)
 
-KRASNOYARSK, Nov. 8. Neon blobs, watery marketing copy and three identical cards are what the README calls first-order clichés of generated design. The library of modular skills goes after those, then after a second order: dogmatic dark tech styling, a mandatory 7:5 bento and bans on tables.
+KRASNOYARSK, Nov. 9. Neon blobs, watery marketing copy and three identical cards are what the README calls first-order clichés of generated design. The library of modular skills goes after those, then after a second order: dogmatic dark tech styling, a mandatory 7:5 bento and bans on tables.
 
 Its last push came on Sept. 10.
 
@@ -86,7 +86,7 @@ The repository also holds Figma guidance on tokens and components, and a researc
 
 ### [Tank Dashboard Only Listens, and Writes Nothing to the Car](https://github.com/Radomir-Aksenenko/tank-priborka)
 
-KRASNOYARSK, Nov. 8. TANK Priborka is a digital instrument cluster for the TANK 500, the TANK 300 and other GWM vehicles running NOBO Automotive IN9.0-OS on a Snapdragon SA8155P.
+KRASNOYARSK, Nov. 9. TANK Priborka is a digital instrument cluster for the TANK 500, the TANK 300 and other GWM vehicles running NOBO Automotive IN9.0-OS on a Snapdragon SA8155P.
 
 Its last push came on Aug. 31. The current release is v1.0.4, out Aug. 31.
 
@@ -94,7 +94,7 @@ It draws a 270-degree speedometer to 240 km/h, an 8,000 r.p.m. tachometer, a com
 
 ### [An Issue Goes In, a Reviewed Pull Request Comes Out](https://github.com/Radomir-Aksenenko/gitai)
 
-KRASNOYARSK, Nov. 8. A label on an issue starts the line. A strong model writes the specification that every later stage is judged against, and cheap models then work on it in parallel, each in a sandbox of its own.
+KRASNOYARSK, Nov. 9. A label on an issue starts the line. A strong model writes the specification that every later stage is judged against, and cheap models then work on it in parallel, each in a sandbox of its own.
 
 Its last push came on Aug. 16.
 
@@ -110,7 +110,7 @@ The README is plain about the limits. Every stage is implemented and the loop ru
 
 ### [One Config Serves a Whole Fleet of AmneziaWG Servers](https://github.com/Radomir-Aksenenko/awg-fleet)
 
-KRASNOYARSK, Nov. 8. WireGuard and AmneziaWG are point to point: a client config pins one endpoint and one server key, so a domain cannot simply be spread across servers that hold keys of their own.
+KRASNOYARSK, Nov. 9. WireGuard and AmneziaWG are point to point: a client config pins one endpoint and one server key, so a domain cannot simply be spread across servers that hold keys of their own.
 
 Its last push came on July 14.
 
@@ -126,13 +126,13 @@ Tunnel MTU is pinned low and every node clamps TCP MSS to the path, so large pac
 
 ### [File Client in Windows 11 Dress Speaks SFTP, FTP and FTPS](https://github.com/Radomir-Aksenenko/fluent-transfer)
 
-KRASNOYARSK, Nov. 8. Fluent Transfer speaks SFTP, FTP and FTPS from two panes, local on the left and remote on the right. It keeps passwords with Windows DPAPI, runs one to four transfers at once and takes files by drag and drop.
+KRASNOYARSK, Nov. 9. Fluent Transfer speaks SFTP, FTP and FTPS from two panes, local on the left and remote on the right. It keeps passwords with Windows DPAPI, runs one to four transfers at once and takes files by drag and drop.
 
 Its last push came on May 4.
 
 ### [Sound Leveled in Video Files by the Broadcast Standard](https://github.com/Radomir-Aksenenko/audio-normalizer)
 
-KRASNOYARSK, Nov. 8. Audio Normalizer applies the EBU R128 broadcast standard to video soundtracks and can suppress noise with RNNoise. It works through folders in batches, and PyTorch can lend it a GPU.
+KRASNOYARSK, Nov. 9. Audio Normalizer applies the EBU R128 broadcast standard to video soundtracks and can suppress noise with RNNoise. It works through folders in batches, and PyTorch can lend it a GPU.
 
 Its last push came on Sept. 2, 2025. The current release is v2.0.0, out Sept. 2, 2025.
 
