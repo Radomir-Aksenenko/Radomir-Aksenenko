@@ -1,60 +1,40 @@
 <div align="center">
 
-<img src="assets/front.webp" width="100%" alt="The Radomir Times, front page. Radomir is a designer and front-end developer. 1,792 contributions in the past year, 44 in the past week, current streak 2 days, longest 13 days, 3 stars, 13 public repositories. The picture is a city in which each tower is one week of contributions.">
+<img src="assets/front.webp" width="100%" alt="The Radomir Times, front page. Radomir is a designer and front-end developer. 1,927 contributions in the past year, 135 in the past week, current streak 3 days, longest 13 days, 3 stars, 14 public repositories. The picture is a city in which each tower is one week of contributions.">
 
-<img src="assets/news.webp" width="100%" alt="Page 2: Compiler Lays the Redstone So Nobody Has To; One Flutter App Serves Five Systems, and Installs Its Server; and recent commits off the wire.">
+<img src="assets/news.webp" width="100%" alt="Page 2: VPN Protocol Takes Aim at the Censors' Filters; One Flutter App Serves Five Systems, and Installs Its Server; and recent commits off the wire.">
 
-<img src="assets/more.webp" width="100%" alt="Page 3: VPN Protocol Takes Aim at the Censors' Filters; Airport Game Gets a Mod Kit; A Folder Is All It Asks; Design Library Takes On the Three Identical Cards; Tank Dashboard Only Listens, and Writes Nothing to the Car; An Issue Goes In, a Reviewed Pull Request Comes Out; One Config Serves a Whole Fleet of AmneziaWG Servers.">
+<img src="assets/more.webp" width="100%" alt="Page 3: Airport Game Gets a Mod Kit; A Folder Is All It Asks; Compiler Lays the Redstone So Nobody Has To; Design Library Takes On the Three Identical Cards; Tank Dashboard Only Listens, and Writes Nothing to the Car; An Issue Goes In, a Reviewed Pull Request Comes Out; One Config Serves a Whole Fleet of AmneziaWG Servers.">
 
 <img src="assets/record.webp" width="100%" alt="Page 4: contributions by month, languages, repositories and the stack: TypeScript, JavaScript, Python, C++, C#, Go, Rust, Kotlin, Dart, HTML5, Next.js, Svelte, Tailwind CSS, Node.js, Flutter, Figma, Docker, Windows Terminal. Contacts: Telegram random_ak, email amazerust@mail.ru.">
 
 <a href="https://t.me/random_ak"><img src="assets/telegram.webp" width="47%" alt="By Telegram: random_ak"></a>
 <a href="mailto:amazerust@mail.ru"><img src="assets/email.webp" width="47%" alt="By post: amazerust@mail.ru"></a>
 
-<sub><b>Continued on GitHub:</b> [code_to_redstone](https://github.com/Radomir-Aksenenko/code_to_redstone) &nbsp;·&nbsp; [Obsidian App](https://github.com/Radomir-Aksenenko/ObsidianVPN-App) &nbsp;·&nbsp; [Obsidian VPN](https://github.com/Radomir-Aksenenko/ObsidianVPN) &nbsp;·&nbsp; [Airport Security Lib](https://github.com/Radomir-Aksenenko/Airport-Security-Lib-ASL) &nbsp;·&nbsp; [Anti-AI UI Slop](https://github.com/Radomir-Aksenenko/ultimate-anti-ai-ui-slop) &nbsp;·&nbsp; [TANK Priborka](https://github.com/Radomir-Aksenenko/tank-priborka) &nbsp;·&nbsp; [gitai](https://github.com/Radomir-Aksenenko/gitai) &nbsp;·&nbsp; [awg-fleet](https://github.com/Radomir-Aksenenko/awg-fleet) &nbsp;·&nbsp; [Fluent Transfer](https://github.com/Radomir-Aksenenko/fluent-transfer) &nbsp;·&nbsp; [Audio Normalizer](https://github.com/Radomir-Aksenenko/audio-normalizer)</sub>
+<sub><b>Continued on GitHub:</b> [Obsidian VPN](https://github.com/Radomir-Aksenenko/ObsidianVPN) &nbsp;·&nbsp; [Obsidian App](https://github.com/Radomir-Aksenenko/ObsidianVPN-App) &nbsp;·&nbsp; [Airport Security Lib](https://github.com/Radomir-Aksenenko/Airport-Security-Lib-ASL) &nbsp;·&nbsp; [code_to_redstone](https://github.com/Radomir-Aksenenko/code_to_redstone) &nbsp;·&nbsp; [Anti-AI UI Slop](https://github.com/Radomir-Aksenenko/ultimate-anti-ai-ui-slop) &nbsp;·&nbsp; [TANK Priborka](https://github.com/Radomir-Aksenenko/tank-priborka) &nbsp;·&nbsp; [gitai](https://github.com/Radomir-Aksenenko/gitai) &nbsp;·&nbsp; [awg-fleet](https://github.com/Radomir-Aksenenko/awg-fleet) &nbsp;·&nbsp; [Fluent Transfer](https://github.com/Radomir-Aksenenko/fluent-transfer) &nbsp;·&nbsp; [Audio Normalizer](https://github.com/Radomir-Aksenenko/audio-normalizer) &nbsp;·&nbsp; [Rine-server](https://github.com/Radomir-Aksenenko/Rine-server)</sub>
 
 </div>
 
 <details>
 <summary><sub>Read this edition as text</sub></summary>
 
-### OBSIDIAN APP GOES OUT AS V2.0.8
+### OBSIDIAN APP GOES OUT AS V2.2.0
 
-KRASNOYARSK, Nov. 9. GitHub's ledger shows 44 contributions for the seven days ended today, up from 42 the week before and above the year's weekly mean of 34. Obsidian App went out as v2.0.8 on Nov. 8, with 21 commits on the branch in the past seven days.
+KRASNOYARSK, Nov. 16. GitHub's ledger shows 135 contributions for the seven days ended today, up from 56 the week before and above the year's weekly mean of 37. Obsidian App went out as v2.2.0 on Nov. 10, with 9 commits on the branch in the past seven days.
 
-The public log for the week holds 28 commits in 2 repositories: Obsidian App with 21 and Obsidian VPN with 7.
+The public log for the week holds 144 commits in 3 repositories: Rine-server with 98, Obsidian VPN with 37 and Obsidian App with 9.
 
-The most recent entry, under Obsidian App on Nov. 8, reads: "update to the speed work (TCP autotuning, UDP GSO."
+The most recent entry, under Rine-server on Nov. 15, reads: "add MIT license."
 
-Radomir is a designer and front-end developer, the profile states. The account opened in October, 2022, and holds 13 public repositories, with Go, JavaScript, Dart, C#, TypeScript, Python, Kotlin, Rust and C++ as their leading languages.
+Radomir is a designer and front-end developer, the profile states. The account opened in October, 2022, and holds 14 public repositories, with Rust, Dart, Go, JavaScript, C#, TypeScript, Python, Kotlin and C++ as their leading languages.
 
-GitHub credits it with 1,792 contributions in the past twelve months, private work included. The heaviest week began on Sept. 27 and brought 166. The longest unbroken run stands at 13 days.
-
-### [Compiler Lays the Redstone So Nobody Has To](https://github.com/Radomir-Aksenenko/code_to_redstone)
-
-KRASNOYARSK, Nov. 9. Nobody need lay dust, repeaters and comparators by hand any longer, the code_to_redstone README says. A circuit is described in code or as a graph of nodes, and the compiler returns a finished build as a .schem, .litematic or .mcfunction file.
-
-The repository took 42 commits in the past month; the latest of them reads, "dense router and compactness test; add README and."
-
-Placement and routing are automatic. Every structure generated in the tests goes through a simulator that follows Java Edition rules tick by tick, and the result is checked against the logical model.
-
-A small language called RSL describes a full adder in a few lines. A React editor does the same work in a browser, and an annealing search hunts for gates built without torches or repeaters.
-
-Cells come in fast and compact modes, among them an XOR made from two comparators. The router is deterministic and works in channels, with branches at y=1 and trunks at y=3.
-
-### [One Flutter App Serves Five Systems, and Installs Its Server](https://github.com/Radomir-Aksenenko/ObsidianVPN-App)
-
-KRASNOYARSK, Nov. 9. A client for Obsidian followed in a separate repository, ObsidianVPN-App, now at 55 commits. It is one Flutter application for Windows, macOS, Linux, Android and iOS, and it can set up the Go server on an owner's own VPS over SSH, along with a small keyserver script.
-
-The repository took 26 commits in the past month; the latest of them reads, "update to the speed work (TCP autotuning, UDP GSO." The current release is v2.0.8, out Nov. 8.
-
-The Go core is attached as a submodule. The apps are built only in GitHub Actions, where one workflow compiles for all five systems and another publishes the release.
+GitHub credits it with 1,927 contributions in the past twelve months, private work included. The heaviest week began on Sept. 27 and brought 166. The longest unbroken run stands at 13 days.
 
 ### [VPN Protocol Takes Aim at the Censors' Filters](https://github.com/Radomir-Aksenenko/ObsidianVPN)
 
-KRASNOYARSK, Nov. 9. Obsidian, an open layer-3 network protocol, was built to defeat deep packet inspection, active probing and state-level censors such as the TSPU system, according to its specification.
+KRASNOYARSK, Nov. 16. Obsidian, an open layer-3 network protocol, was built to defeat deep packet inspection, active probing and state-level censors such as the TSPU system, according to its specification.
 
-The repository took 11 commits in the past month; the latest of them reads, "log the congestion control connections really get." The current release is v1.2.0, out Oct. 8.
+The repository took 48 commits in the past month; the latest of them reads, "keep calls alive when the UDP data path fails or." The current release is v1.3.0, out Nov. 10.
 
 Application-level proxies like VLESS, Shadowsocks and Trojan work on streams. Obsidian creates a full virtual network interface instead. Its README claims throughput above 350 megabits a second and no TCP-over-TCP slowdown for games, streaming and live calls.
 
@@ -64,9 +44,17 @@ Traffic is sealed with ChaCha20-Poly1305. Keys are exchanged by X25519 or the po
 
 Android, iOS, Linux, macOS and Windows are listed as supported. The project calls its status beta and offers the code as an open specification with a reference implementation.
 
+### [One Flutter App Serves Five Systems, and Installs Its Server](https://github.com/Radomir-Aksenenko/ObsidianVPN-App)
+
+KRASNOYARSK, Nov. 16. A client for Obsidian followed in a separate repository, ObsidianVPN-App, now at 64 commits. It is one Flutter application for Windows, macOS, Linux, Android and iOS, and it can set up the Go server on an owner's own VPS over SSH, along with a small keyserver script.
+
+The repository took 33 commits in the past month; the latest of them reads, "2.2.1 with core 4c08007." The current release is v2.2.0, out Nov. 10.
+
+The Go core is attached as a submodule. The apps are built only in GitHub Actions, where one workflow compiles for all five systems and another publishes the release.
+
 ### [Airport Game Gets a Mod Kit; A Folder Is All It Asks](https://github.com/Radomir-Aksenenko/Airport-Security-Lib-ASL)
 
-KRASNOYARSK, Nov. 9. ASL, a modding framework for Airport Security Sucks!, turns a bare BepInEx 6 install into a platform where a folder dropped in mods/ simply loads. It has 2 stars so far.
+KRASNOYARSK, Nov. 16. ASL, a modding framework for Airport Security Sucks!, turns a bare BepInEx 6 install into a platform where a folder dropped in mods/ simply loads. It has 2 stars so far.
 
 Its last push came on Oct. 15. The current release is v0.1.0, out June 17.
 
@@ -74,9 +62,21 @@ Authors may ship no-code content, C# scripts compiled at runtime or finished DLL
 
 A full networking stack is in place as well, with identity, synced state and message transport over Mirror.
 
+### [Compiler Lays the Redstone So Nobody Has To](https://github.com/Radomir-Aksenenko/code_to_redstone)
+
+KRASNOYARSK, Nov. 16. Nobody need lay dust, repeaters and comparators by hand any longer, the code_to_redstone README says. A circuit is described in code or as a graph of nodes, and the compiler returns a finished build as a .schem, .litematic or .mcfunction file.
+
+Its last push came on Oct. 15.
+
+Placement and routing are automatic. Every structure generated in the tests goes through a simulator that follows Java Edition rules tick by tick, and the result is checked against the logical model.
+
+A small language called RSL describes a full adder in a few lines. A React editor does the same work in a browser, and an annealing search hunts for gates built without torches or repeaters.
+
+Cells come in fast and compact modes, among them an XOR made from two comparators. The router is deterministic and works in channels, with branches at y=1 and trunks at y=3.
+
 ### [Design Library Takes On the Three Identical Cards](https://github.com/Radomir-Aksenenko/ultimate-anti-ai-ui-slop)
 
-KRASNOYARSK, Nov. 9. Neon blobs, watery marketing copy and three identical cards are what the README calls first-order clichés of generated design. The library of modular skills goes after those, then after a second order: dogmatic dark tech styling, a mandatory 7:5 bento and bans on tables.
+KRASNOYARSK, Nov. 16. Neon blobs, watery marketing copy and three identical cards are what the README calls first-order clichés of generated design. The library of modular skills goes after those, then after a second order: dogmatic dark tech styling, a mandatory 7:5 bento and bans on tables.
 
 Its last push came on Sept. 10.
 
@@ -86,7 +86,7 @@ The repository also holds Figma guidance on tokens and components, and a researc
 
 ### [Tank Dashboard Only Listens, and Writes Nothing to the Car](https://github.com/Radomir-Aksenenko/tank-priborka)
 
-KRASNOYARSK, Nov. 9. TANK Priborka is a digital instrument cluster for the TANK 500, the TANK 300 and other GWM vehicles running NOBO Automotive IN9.0-OS on a Snapdragon SA8155P.
+KRASNOYARSK, Nov. 16. TANK Priborka is a digital instrument cluster for the TANK 500, the TANK 300 and other GWM vehicles running NOBO Automotive IN9.0-OS on a Snapdragon SA8155P.
 
 Its last push came on Aug. 31. The current release is v1.0.4, out Aug. 31.
 
@@ -94,7 +94,7 @@ It draws a 270-degree speedometer to 240 km/h, an 8,000 r.p.m. tachometer, a com
 
 ### [An Issue Goes In, a Reviewed Pull Request Comes Out](https://github.com/Radomir-Aksenenko/gitai)
 
-KRASNOYARSK, Nov. 9. A label on an issue starts the line. A strong model writes the specification that every later stage is judged against, and cheap models then work on it in parallel, each in a sandbox of its own.
+KRASNOYARSK, Nov. 16. A label on an issue starts the line. A strong model writes the specification that every later stage is judged against, and cheap models then work on it in parallel, each in a sandbox of its own.
 
 Its last push came on Aug. 16.
 
@@ -110,7 +110,7 @@ The README is plain about the limits. Every stage is implemented and the loop ru
 
 ### [One Config Serves a Whole Fleet of AmneziaWG Servers](https://github.com/Radomir-Aksenenko/awg-fleet)
 
-KRASNOYARSK, Nov. 9. WireGuard and AmneziaWG are point to point: a client config pins one endpoint and one server key, so a domain cannot simply be spread across servers that hold keys of their own.
+KRASNOYARSK, Nov. 16. WireGuard and AmneziaWG are point to point: a client config pins one endpoint and one server key, so a domain cannot simply be spread across servers that hold keys of their own.
 
 Its last push came on July 14.
 
@@ -126,13 +126,13 @@ Tunnel MTU is pinned low and every node clamps TCP MSS to the path, so large pac
 
 ### [File Client in Windows 11 Dress Speaks SFTP, FTP and FTPS](https://github.com/Radomir-Aksenenko/fluent-transfer)
 
-KRASNOYARSK, Nov. 9. Fluent Transfer speaks SFTP, FTP and FTPS from two panes, local on the left and remote on the right. It keeps passwords with Windows DPAPI, runs one to four transfers at once and takes files by drag and drop.
+KRASNOYARSK, Nov. 16. Fluent Transfer speaks SFTP, FTP and FTPS from two panes, local on the left and remote on the right. It keeps passwords with Windows DPAPI, runs one to four transfers at once and takes files by drag and drop.
 
 Its last push came on May 4.
 
 ### [Sound Leveled in Video Files by the Broadcast Standard](https://github.com/Radomir-Aksenenko/audio-normalizer)
 
-KRASNOYARSK, Nov. 9. Audio Normalizer applies the EBU R128 broadcast standard to video soundtracks and can suppress noise with RNNoise. It works through folders in batches, and PyTorch can lend it a GPU.
+KRASNOYARSK, Nov. 16. Audio Normalizer applies the EBU R128 broadcast standard to video soundtracks and can suppress noise with RNNoise. It works through folders in batches, and PyTorch can lend it a GPU.
 
 Its last push came on Sept. 2, 2025. The current release is v2.0.0, out Sept. 2, 2025.
 

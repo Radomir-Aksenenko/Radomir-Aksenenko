@@ -1,7 +1,7 @@
 {
  "stars": 3,
- "repos": 13,
- "total": 1792,
+ "repos": 14,
+ "total": 1927,
  "ran": [
   {
    "key": "release:ObsidianVPN-App:v2.0.7",
@@ -10,6 +10,10 @@
   {
    "key": "release:ObsidianVPN-App:v2.0.8",
    "week": 214
+  },
+  {
+   "key": "release:ObsidianVPN-App:v2.2.0",
+   "week": 215
   }
  ]
 }
